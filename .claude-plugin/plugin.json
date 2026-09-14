@@ -1,0 +1,17 @@
+{
+  "name": "adzviser",
+  "version": "1.0.0",
+  "description": "Analyze marketing, analytics, ecommerce, and CRM data with Adzviser. Includes workflows for performance reviews, budget pacing, SEO, ecommerce reporting, and public competitor ad research, connected to Adzviser's remote MCP server through OAuth.",
+  "author": {
+    "name": "Adzviser",
+    "email": "zeyuan.gu@adzviser.com",
+    "url": "https://adzviser.com"
+  },
+  "homepage": "https://adzviser.com",
+  "repository": "https://github.com/adzviserllc/claude-plugin",
+  "license": "Apache-2.0",
+  "keywords": [
+    "marketing", "analytics", "reporting", "google-ads", "meta-ads",
+    "google-analytics", "seo", "ecommerce", "shopify", "crm", "mcp"
+  ]
+}

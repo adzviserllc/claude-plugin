@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+"""Build a reproducible plugin ZIP from an explicit set of distributable files."""
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import re
+import zipfile
+
+
+ROOT = Path(__file__).resolve().parents[1]
+ROOT_FILES = (".claude-plugin/plugin.json", ".mcp.json", "README.md", "LICENSE")
+CONTENT_DIRS = ("skills", "agents", "assets")
+CONTENT_SUFFIXES = {".md", ".json", ".svg", ".png"}
+
+
+def package(output_dir: Path) -> Path:
+    manifest = json.loads((ROOT / ROOT_FILES[0]).read_text())
+    name, version = manifest["name"], manifest["version"]
+    if not re.fullmatch(r"[a-z][a-z0-9-]*", name):
+        raise ValueError("Invalid plugin name")
+    if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?", version):
+        raise ValueError("Invalid release version")
+    paths = [ROOT / item for item in ROOT_FILES]
+    for directory in CONTENT_DIRS:
+        base = ROOT / directory
+        if base.is_symlink():
+            raise ValueError(f"Refusing symlink: {base}")
+        for path in sorted(base.rglob("*")):
+            if path.is_symlink():
+                raise ValueError(f"Refusing symlink: {path}")
+            if path.is_file():
+                relative = path.relative_to(ROOT)
+                if any(part.startswith(".") for part in relative.parts):
+                    raise ValueError(f"Unexpected hidden file: {relative}")
+                if path.suffix not in CONTENT_SUFFIXES:
+                    raise ValueError(f"Unexpected content file: {relative}")
+                paths.append(path)
+    if not any(path.name == "SKILL.md" for path in paths):
+        raise ValueError("No skills found")
+    for path in paths:
+        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(ROOT):
+            raise ValueError(f"Invalid distributable path: {path}")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    archive = output_dir / f"{name}-{version}.zip"
+    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+        for path in sorted(paths):
+            info = zipfile.ZipInfo(path.relative_to(ROOT).as_posix(), (2026, 1, 1, 0, 0, 0))
+            info.create_system = 3
+            info.external_attr = 0o100644 << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            bundle.writestr(info, path.read_bytes())
+    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    archive.with_suffix(".zip.sha256").write_text(f"{digest}  {archive.name}\n")
+    print(f"{archive} ({len(paths)} files, SHA256 {digest})")
+    return archive
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "dist")
+    package(parser.parse_args().output_dir)

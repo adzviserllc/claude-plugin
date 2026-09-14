@@ -1,0 +1,19 @@
+{
+  "name": "adzviser",
+  "metadata": {
+    "description": "Adzviser plugins for marketing analytics and reporting in Claude."
+  },
+  "owner": {
+    "name": "Adzviser",
+    "email": "zeyuan.gu@adzviser.com"
+  },
+  "plugins": [
+    {
+      "name": "adzviser",
+      "source": "./",
+      "description": "Marketing analytics and reporting with Adzviser: performance reviews, budget pacing, SEO, ecommerce, and competitor research.",
+      "category": "marketing",
+      "tags": ["analytics", "advertising", "reporting", "ecommerce", "seo"]
+    }
+  ]
+}

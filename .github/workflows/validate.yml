@@ -1,0 +1,30 @@
+name: Validate plugin
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the Claude Code validator
+        run: npm install --global @anthropic-ai/claude-code@2.1.270
+      - name: Validate manifests and components
+        run: |
+          claude plugin validate .claude-plugin/plugin.json --strict
+          claude plugin validate .claude-plugin/marketplace.json --strict
+          claude plugin validate skills --strict
+          claude plugin validate agents --strict
+      - name: Build and validate the distribution
+        run: |
+          python3 scripts/package_plugin.py
+          python3 -m zipfile -e dist/adzviser-*.zip /tmp/adzviser-distribution
+          claude plugin validate /tmp/adzviser-distribution --strict

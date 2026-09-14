@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "adzviser": {
+      "type": "http",
+      "url": "https://mcp.adzviser.com/http"
+    }
+  }
+}
