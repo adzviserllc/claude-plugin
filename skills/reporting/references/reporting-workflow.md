@@ -1,5 +1,9 @@
 # Adzviser reporting workflow
 
+## Start and resume
+
+Follow the [connection guidance](../../setup/references/connection.md) before requesting data. Reuse a successful current access check and workspace result. If blocked, give the relevant connection step, retain the requested report in the conversation, and continue it after the user completes that step. Do not require a separate setup command or repeat a successful workspace lookup. Public-only requests still do not need a workspace.
+
 ## Select the data path
 
 Use the Adzviser tools exposed by the current session, not a guessed HTTP API. In terminal Claude Code, a tool can appear as `mcp__plugin_adzviser_adzviser__retrieve_reporting_data`; Desktop may supply it through the shared Adzviser connector with a different prefix. Do not require a plugin-specific prefix or ask users to disable that connector. The names below are the unprefixed tool names.

@@ -2,6 +2,8 @@
 
 This document contains listing copy and the remaining publication steps. A GitHub repository and its own marketplace do not by themselves constitute an Anthropic directory listing.
 
+The repository's 1.1.0-rc.1 test candidate adds an Adzviser starting skill and shared connection guidance. It is available from `main` but not verified for first-time Desktop onboarding. The latest stable tagged release is 1.0.2. Use that release's listing copy if submitting 1.0.2; the eight-skill copy below describes the candidate.
+
 ## Submission values
 
 | Field | Value |
@@ -11,7 +13,7 @@ This document contains listing copy and the remaining publication steps. A GitHu
 | Plugin ID | `adzviser` |
 | Suggested display name | Adzviser Marketing Analytics |
 | Publisher | Adzviser |
-| Version | `1.0.2` |
+| Version | `1.1.0-rc.1` (repository test candidate; latest stable tag is `1.0.2`) |
 | Categories, if requested | Marketing; Data & Analytics |
 | Website | `https://adzviser.com` |
 | Documentation | `https://github.com/adzviserllc/claude-plugin#readme` |
@@ -34,11 +36,13 @@ Analyze marketing data with Adzviser: performance reviews, budget pacing, SEO, e
 
 ## Full description
 
-Connect Claude to your marketing, analytics, ecommerce, and CRM data through Adzviser. Seven bundled skills help you discover connected accounts, retrieve reporting data, review campaign performance, check budget pacing, investigate organic search changes, compare store revenue with ad spend, and research public competitor ads.
+Analyze your marketing, analytics, ecommerce, and CRM data through Adzviser. Eight bundled skills include a starting workflow, account discovery, reporting, campaign performance reviews, budget pacing, organic search analysis, ecommerce reporting, and public competitor ad research. Ask a question directly; the workflows check access and provide a connection step when needed.
 
 Adzviser connects through OAuth and uses your existing workspaces and source permissions. Reporting workflows discover available fields, calculate exact date ranges, and preserve currency and attribution differences when comparing results. The included marketing analyst agent supports more involved analysis in compatible Claude environments.
 
 This plugin provides reporting and recommendations. It does not create campaigns or change advertising budgets. Public ad-library research covers public creative and messaging, not competitors' private performance data. An Adzviser account and access to the requested sources are required.
+
+In the tested Claude Desktop Code configuration, Adzviser must also be connected and enabled through Desktop's Connectors controls. Automatic connection setup from a plugin-only installation has not been verified. Do not advertise one-click onboarding or suggest that directory approval resolves this automatically.
 
 ## Reviewer setup and sample prompts
 

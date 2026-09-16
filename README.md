@@ -1,37 +1,47 @@
 # Adzviser for Claude
 
-Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. This plugin bundles seven skills and a marketing analyst agent with [Adzviser's](https://adzviser.com) remote MCP connection.
+Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. Start with a question; Adzviser checks access and guides you into the relevant workflow. The plugin includes eight skills and a marketing analyst agent.
 
-## Install
+> The repository's `main` branch contains test candidate **1.1.0-rc.1**. The new starting skill and connection guidance have not yet passed an interactive Desktop onboarding test. The latest stable tagged release remains **1.0.2**.
 
-### Claude Code in a terminal
+## Get started in Claude Desktop
 
-Run these commands inside Claude Code:
+You need an [Adzviser account](https://adzviser.com/set-up) with the source accounts you want to analyze. If you already connected Adzviser to Claude, keep that connection enabled and reuse it.
+
+1. In **Customize → Plugins**, choose **Add marketplace → Add from a repository**, enter `https://github.com/adzviserllc/claude-plugin`, and install Adzviser. The repository currently provides **1.1.0-rc.1**. If the marketplace is already added, refresh it and update the installed plugin using the available controls. Confirm the displayed version is **1.1.0-rc.1** before testing; an existing installation may still be on an older version.
+2. Start a conversation and ask:
+
+```text
+Use Adzviser to show my connected accounts and suggest a useful first report.
+```
+
+If your data is already accessible, the workflow should proceed without another login. Otherwise, it gives you the relevant connection step. In the **Code tab**, open **+ beside the prompt → Connectors** and enable Adzviser. Use **Manage connectors** for sign-in. If Adzviser is absent, open [Connect Adzviser](https://claude.ai/directory/adzviser) using the same Claude account and organization, complete browser authorization, then return to the conversation. In **Cowork**, use **Customize → Connectors**. Reply **done** in the same conversation to continue the pending request.
+
+For a Code session, choose a normal working folder, not `.claude`. If you prefer a command, select the **Adzviser** starting skill from the slash-command picker: Desktop may display `/adzviser`, while terminal Claude Code uses `/adzviser:adzviser`. The existing setup skill remains available as `/setup` or `/adzviser:setup`. The starting skill is included in this candidate; version 1.0.2 has the setup skill only.
+
+**Current Desktop limitation:** installing our GitHub plugin has not been shown to automatically establish its data connection. Our successful Desktop test used the plugin with an enabled Adzviser connector. This candidate improves guidance and task continuation; it does not remove that connection step or implement an automatic sign-in window. See [Desktop's connection controls](https://code.claude.com/docs/en/desktop#connect-external-tools) and [Claude's plugin installation guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
+
+## Claude Code in a terminal
+
+Run these commands inside terminal Claude Code, not in a normal shell or Desktop chat:
 
 ```text
 /plugin marketplace add adzviserllc/claude-plugin
 /plugin install adzviser@adzviser
 ```
 
-Restart your session if prompted. Open `/mcp`, select Adzviser, and complete browser sign-in. Then try `/adzviser:setup`.
+Restart your session if prompted, then ask the same getting-started question above. If sign-in is needed, open `/mcp`, select Adzviser, and complete browser authorization. This uses the plugin's declared connection. An isolated terminal check reached the sign-in requirement; a first-time authenticated terminal report still needs verification.
 
-### Claude and Cowork
+## If something gets stuck
 
-Open **Customize → Plugins**, choose **Add marketplace**, and add this repository:
+| What you see | Next step |
+| --- | --- |
+| An Adzviser skill appears, but it cannot access data | Check Adzviser under Connectors in Desktop. The skill loaded; repeated plugin installation is not the first fix. |
+| Adzviser is connected and enabled, but tools remain unavailable | Share the visible status/error with [support](https://adzviser.com/contact-us). Do not keep reinstalling or signing in. |
+| Your workspace appears, but a requested source is missing | Add that account in [Adzviser setup](https://adzviser.com/set-up); the Claude connection is already working. |
+| `/adzviser` is unavailable | Ask in ordinary language or use the Adzviser setup entry. Command labels depend on your host and installed version. |
 
-```text
-https://github.com/adzviserllc/claude-plugin
-```
-
-Install Adzviser and complete the connection's OAuth sign-in. Alternatively, download `adzviser-1.0.2.zip` from [Releases](https://github.com/adzviserllc/claude-plugin/releases) and use the custom-plugin upload option. Available controls depend on your Claude plan and organization settings. See [Claude's installation guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
-
-### Code tab in Claude Desktop
-
-Install through **Customize → Plugins**, then start a new **Local** Code session in an ordinary working folder. In the slash-command picker, select `/adzviser:setup` or `/setup` with **(adzviser)** in its description, depending on the Desktop version. `/adzviser` alone is not a runnable command. You can also inspect skills under **+ → Plugins**.
-
-Under **+ beside the prompt → Connectors**, enable Adzviser. Use **Manage connectors** to connect your account or complete browser sign-in if needed. Keep an existing Adzviser directory connector enabled: the plugin and connector can share the same connection. Then ask the setup skill to list your actual workspaces and connected sources. See [Claude Desktop's controls](https://code.claude.com/docs/en/desktop#connect-external-tools).
-
-If skills appear but Adzviser tools are missing, check the connector's enabled and connected states. A skill appearing does not prove authentication, and a missing tool does not by itself mean credentials expired. The `/mcp` instructions above apply to terminal Claude Code.
+Connection authorization always happens through the browser or Claude's own controls. Never paste a password or access token into the conversation.
 
 ## Requirements
 
@@ -43,10 +53,11 @@ Public competitor-ad and PageSpeed requests do not require a workspace, but stil
 
 ## Included workflows
 
-Type a command or ask a matching question in ordinary language. In Claude Code the commands use the `adzviser:` namespace.
+Ask a matching question in ordinary language, or select a skill from the command picker. The table uses terminal command names; Desktop may display the shorter skill name with **(adzviser)** in its description.
 
 | Skill | Example |
 | --- | --- |
+| `/adzviser:adzviser` | “Get started with Adzviser.” Or enter your reporting question directly. |
 | `/adzviser:setup` | “Which workspaces and source accounts are connected?” |
 | `/adzviser:reporting` | “Export last month's Google Ads spend by campaign.” |
 | `/adzviser:performance-review` | “Compare Google Ads and Meta Ads last week with the week before.” |
