@@ -11,8 +11,9 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = (".claude-plugin/plugin.json", ".mcp.json", "README.md", "LICENSE")
-CONTENT_DIRS = ("skills", "agents", "assets")
+CONTENT_DIRS = ("skills", "agents", "assets", "runtime")
 CONTENT_SUFFIXES = {".md", ".json", ".svg", ".png"}
+RUNTIME_FILES = {"connect.cjs", "callback-page.cjs", "callback.html"}
 
 
 def package(output_dir: Path, root: Path = ROOT) -> Path:
@@ -35,7 +36,8 @@ def package(output_dir: Path, root: Path = ROOT) -> Path:
                 relative = path.relative_to(root)
                 if any(part.startswith(".") for part in relative.parts):
                     raise ValueError(f"Unexpected hidden file: {relative}")
-                if path.suffix not in CONTENT_SUFFIXES:
+                allowed = path.name in RUNTIME_FILES if directory == "runtime" else path.suffix in CONTENT_SUFFIXES
+                if not allowed:
                     raise ValueError(f"Unexpected content file: {relative}")
                 paths.append(path)
     if not any(path.name == "SKILL.md" for path in paths):

@@ -28,7 +28,9 @@ jobs:
           claude plugin validate desktop/skills --strict
           claude plugin validate desktop/agents --strict
       - name: Test the independent connection with synthetic OAuth credentials
-        run: python3 scripts/test_desktop_connection.py
+        run: |
+          node --test scripts/callback-page.test.cjs
+          python3 scripts/test_desktop_connection.py
       - name: Build and validate the distribution
         run: |
           python3 scripts/package_plugin.py

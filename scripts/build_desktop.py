@@ -26,6 +26,11 @@ def expected_files():
     files["LICENSE"] = (ROOT / "LICENSE").read_bytes()
     for name in ("README.md", "skills/setup/references/connection.md"):
         files[name] = (ROOT / "templates/desktop" / name).read_bytes()
+    for path in (ROOT / "templates/desktop/runtime").glob("*"):
+        if path.is_symlink():
+            raise ValueError(f"Refusing symlink: {path}")
+        if path.is_file():
+            files[f"runtime/{path.name}"] = path.read_bytes()
     setup = replace_once(files["skills/setup/SKILL.md"].decode(),
         "Using the shared connection is sufficient; a second plugin-specific connection is not required.",
         "Use this edition's independent connection as described in the connection guidance.",
@@ -39,14 +44,15 @@ def expected_files():
     manifest = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
     manifest.update(
         name="adzviser-desktop",
-        version="0.1.0-rc.1",
+        version="0.1.0-rc.2",
         description="Experimental Adzviser for local Claude Code: marketing workflows with an independent browser sign-in. No directory connector required. Requires Node.js 22.12+ and npm.",
     )
     files[".claude-plugin/plugin.json"] = (json.dumps(manifest, indent=2) + "\n").encode()
     mcp = {"mcpServers": {"adzviser-independent": {
         "type": "stdio",
         "command": "npx",
-        "args": ["--yes", "--ignore-scripts", "mcp-remote@0.14.2", "https://mcp.adzviser.com/http",
+        "args": ["--yes", "--ignore-scripts", "--package=mcp-remote@0.14.2", "node",
+                 "${CLAUDE_PLUGIN_ROOT}/runtime/connect.cjs", "https://mcp.adzviser.com/http",
                  "--transport", "http-only", "--auth-timeout", "300",
                  "--static-oauth-client-metadata", '{"client_name":"Adzviser-Desktop-Plugin"}'],
         "env": {"MCP_REMOTE_CONFIG_DIR": "${CLAUDE_PLUGIN_DATA}/auth", "NPM_CONFIG_IGNORE_SCRIPTS": "true"},

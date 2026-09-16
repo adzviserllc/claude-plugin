@@ -2,19 +2,23 @@
 
 This test edition packages the eight Adzviser workflows with its **own data connection and browser sign-in**. The Adzviser directory connector can stay disabled. It still uses your existing Adzviser account and the hosted Adzviser service.
 
-**Status: experimental, not ready for a directory submission.** Automated checks do not establish that a fresh customer's Desktop installation completes sign-in successfully. Test the steps below before making that claim.
+**Status: experimental, not ready for a directory submission.** Browser sign-in and real workspace retrieval through the independent connection have been confirmed in one Linux Desktop installation. Repeat-session access, report accuracy, and other supported environments still need acceptance testing.
 
 ## Install and test in Claude Desktop Code
 
 Requires a **local** Code session, Node.js **22.12 or newer** and npm available to the Desktop app, permission to run local MCP servers, and access to npm and `mcp.adzviser.com`. The first start downloads `mcp-remote@0.14.2` through npm with installation scripts disabled. This edition has not been verified in Cowork, Chat, remote Code sessions, or Windows.
 
-1. In **Customize → Plugins**, refresh the marketplace from `https://github.com/adzviserllc/claude-plugin`. Install **adzviser-desktop**, version **0.1.0-rc.1**, in an ordinary working folder. If the original **adzviser** plugin is installed, turn it off for this test to avoid duplicate skill names. Keep the directory connector disabled during this independence test.
+1. In **Customize → Plugins**, refresh the marketplace from `https://github.com/adzviserllc/claude-plugin`. Install **adzviser-desktop**, version **0.1.0-rc.2**, in an ordinary working folder. If the original **adzviser** plugin is installed, turn it off for this test to avoid duplicate skill names. Keep the directory connector disabled during this independence test.
 2. Start a new **local Code** conversation in that same folder. Approve the plugin's local MCP connection if Claude asks. The helper should open Adzviser's browser sign-in. Complete it; this is a new authorization for **Adzviser-Desktop-Plugin**, separate from the directory connector.
 3. Ask: **“Use Adzviser Desktop's independent connection to list my actual workspaces and connected data sources.”** Check that an actual `list_workspace` call uses `plugin:adzviser-desktop:adzviser-independent` (punctuation may differ in tool names), and compare its result to your Adzviser account.
 4. Start another conversation in the same folder, with the directory connector still disabled. Repeat the request. Passing this check establishes both independent access and reuse of the saved login for your installation.
 5. Run one small report for a known account and date range and compare the totals to the source platform before approving this edition for customers.
 
 If the browser does not open, inspect the independent server's visible status in Claude's MCP controls (`/mcp` where available). `npx` not found means Desktop cannot see your Node/npm installation. If sign-in outlasts Claude's startup timeout, reconnect the server after signing in. Do not keep reinstalling the plugin or paste credentials into chat.
+
+Version **0.1.0-rc.2** adds an Adzviser-branded callback page with a clear return-to-Desktop message. The localhost address receives the sign-in result on your computer; the page clears the code and state from the address bar and makes no external resource requests. Its close button includes manual-close guidance for browsers that block it. The page acknowledges receipt of the authorization response; a successful tool call in Claude confirms account access.
+
+Updating preserves the helper's saved sign-in. Restart Desktop after updating so the new local helper loads. Turning the plugin off and on may reuse that sign-in without opening a browser again.
 
 Terminal Claude Code can install the same edition with `/plugin install adzviser-desktop@adzviser`, after adding this repository marketplace. These slash commands are entered in Claude Code, not a normal shell. User-scoped installation makes it available across projects; project-scoped installation applies only to that project.
 
@@ -30,6 +34,6 @@ No backend deployment or `mcp/deploy.sh` run is needed. The original remote-conn
 
 ## Data and maintenance
 
-The local helper processes MCP requests, tool results, and its own OAuth credentials. It is third-party executable code, downloaded from npm; its top-level version is pinned, while npm resolves its dependency ranges. It has no Adzviser-specific telemetry added by this plugin. The hosted service remains covered by [Adzviser's privacy policy](https://docs.adzviser.com/privacy) and [terms](https://docs.adzviser.com/terms).
+The local helper processes MCP requests, tool results, and its own OAuth credentials. It is third-party executable code, downloaded from npm; its top-level version is pinned, while npm resolves its dependency ranges. The plugin also includes a small Node.js launcher and callback presentation adapter. The adapter replaces only the pinned helper's known callback HTML responses; it does not alter authorization, token exchange, storage, or MCP messages. No npm cache files are modified. There is no Adzviser-specific telemetry added by this plugin. The hosted service remains covered by [Adzviser's privacy policy](https://docs.adzviser.com/privacy) and [terms](https://docs.adzviser.com/terms).
 
 The workflow files in this directory are generated from the repository's shared skills by `scripts/build_desktop.py`, with independent connection guidance. Edit the shared skills or `templates/desktop/`, then regenerate. Do not edit generated copies directly.

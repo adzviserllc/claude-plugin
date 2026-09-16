@@ -160,6 +160,15 @@ class Bridge:
                         time.sleep(0.05)
                 with urlopen(url, timeout=10) as response:
                     assert response.status == 200
+                    html = response.read().decode()
+                    assert 'Back to your insights.' in html
+                    assert 'Return to Claude Desktop' in html
+                    assert 'return to the CLI' not in html
+                    assert 'fixture-code' not in html
+                    assert 'history.replaceState' in html
+                    assert response.headers['Cache-Control'] == 'no-store'
+                    assert response.headers['Referrer-Policy'] == 'no-referrer'
+                    assert "default-src 'none'" in response.headers['Content-Security-Policy']
             try:
                 result = self.responses.get(timeout=0.1)
                 if result.get("id") == ident:
@@ -194,7 +203,7 @@ def main():
         server = ThreadingHTTPServer(("127.0.0.1", 0), Fixture)
         threading.Thread(target=server.serve_forever, daemon=True).start()
         config = json.loads((ROOT / "desktop/.mcp.json").read_text())["mcpServers"]["adzviser-independent"]
-        config["args"] = [arg.replace("https://mcp.adzviser.com/http", f"http://127.0.0.1:{server.server_port}/mcp") for arg in config["args"]]
+        config["args"] = [arg.replace("https://mcp.adzviser.com/http", f"http://127.0.0.1:{server.server_port}/mcp").replace("${CLAUDE_PLUGIN_ROOT}", str(ROOT / "desktop")) for arg in config["args"]]
         # Do not inherit credentials from the developer or CI environment.
         env = {key: value for key, value in os.environ.items() if key in ("PATH", "HOME", "SYSTEMROOT", "NPM_CONFIG_CACHE", "npm_config_cache")}
         env.update({key: value.replace("${CLAUDE_PLUGIN_DATA}", str(root / "plugin-data")) for key, value in config["env"].items()})
@@ -223,7 +232,7 @@ def main():
             assert Fixture.authorizations == 1, "Restart should reuse authorization"
             assert Fixture.refreshes == 1, "Expired access token must refresh"
             assert Fixture.calls == 3
-            print("PASS: packaged stdio bridge, OAuth PKCE, workspace call, restart persistence, token refresh, isolated owner-only token storage. No directory connector used.")
+            print("PASS: branded callback, packaged stdio bridge, OAuth PKCE, workspace call, restart persistence, token refresh, isolated owner-only token storage. No directory connector used.")
         finally:
             server.shutdown()
             server.server_close()

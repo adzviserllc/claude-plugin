@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="data:image/png;base64,{{LOGO}}">
+  <title>{{TITLE}} · Adzviser</title>
+  <script nonce="{{NONCE}}">try { history.replaceState(null, '', location.pathname); } catch {}</script>
+  <style nonce="{{NONCE}}">
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #19383c; background: #f5f8f7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 25%, #dcefeb80, transparent 65%); }
+    header { position: relative; display: flex; align-items: center; gap: 10px; padding: 30px 40px; font-size: 24px; font-weight: 650; letter-spacing: -.7px; }
+    header img { width: 35px; height: 35px; }
+    main { position: relative; flex: 1; display: grid; place-items: center; padding: 30px 24px 70px; }
+    .card { width: 100%; max-width: 560px; padding: 46px 46px 34px; border: 1px solid #e0e9e6; border-radius: 24px; background: #fff; text-align: center; box-shadow: 0 24px 80px -36px #234e4b33, 0 2px 10px #234e4b03; }
+    .status-icon { display: grid; place-items: center; width: 76px; height: 76px; margin: 0 auto 27px; border-radius: 50%; color: #287c72; background: #eaf5f0; border: 1px solid #d4eae1; }
+    .status-icon svg { width: 34px; height: 34px; }
+    .eyebrow { margin: 0 0 12px; font-size: 12px; line-height: 1.5; font-weight: 700; letter-spacing: 1.8px; color: #317c78; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(28px, 5vw, 36px); line-height: 1.18; letter-spacing: -1.3px; font-weight: 650; text-wrap: balance; }
+    .description { max-width: 380px; margin: 20px auto 28px; color: #596d70; font-size: 16px; line-height: 1.7; text-wrap: pretty; }
+    .next { margin: 0 0 27px; padding: 18px 20px; border-radius: 12px; border: 1px solid #e3eeea; background: #f6faf8; text-align: left; display: flex; align-items: center; gap: 13px; }
+    .next svg { width: 22px; height: 22px; color: #478d87; flex: 0 0 auto; }
+    .next strong { display: block; font-size: 14px; line-height: 1.5; font-weight: 600; }
+    .next span { display: block; margin-top: 3px; color: #607477; font-size: 13px; line-height: 1.5; }
+    button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; width: 100%; padding: 13px 22px; border: 1px solid #296c69; border-radius: 10px; background: #2b7672; color: white; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s; }
+    button:hover { background: #235e5c; }
+    button:focus-visible { outline: 3px solid #99d2c8; outline-offset: 4px; }
+    button svg { width: 17px; height: 17px; }
+    .hint { min-height: 40px; margin: 15px 0 0; color: #64767a; font-size: 12px; line-height: 1.6; }
+    footer { position: relative; padding: 0 24px 26px; text-align: center; color: #64767a; font-size: 12px; }
+    @media (max-width: 480px) { header { padding: 22px 24px; font-size: 22px; } main { padding: 16px 16px 32px; } .card { padding: 32px 24px 23px; border-radius: 20px; } .description { font-size: 15px; } .next { padding: 15px; } }
+    @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+  </style>
+</head>
+<body>
+  <header><img src="data:image/png;base64,{{LOGO}}" alt="" width="35" height="35"><span>Adzviser</span></header>
+  <main>
+    <section class="card" aria-labelledby="title">
+      <div class="status-icon" aria-hidden="true">{{STATUS_ICON}}</div>
+      <p class="eyebrow">{{EYEBROW}}</p>
+      <h1 id="title">{{TITLE}}</h1>
+      <p class="description">{{DESCRIPTION}}</p>
+      <div class="next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M8 21h8m-4-5v5"/></svg>
+        <div><strong>Return to Claude Desktop</strong><span>{{NEXT_STEP}}</span></div>
+      </div>
+      <button id="close-tab" type="button">Close this tab<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 6 8 8M14 6l-8 8"/></svg></button>
+      <p class="hint" id="close-hint" role="status">You can also close this tab using your browser.</p>
+    </section>
+  </main>
+  <footer>Your marketing data. A clearer picture.</footer>
+  <script nonce="{{NONCE}}">
+    document.getElementById('close-tab').addEventListener('click', () => {
+      window.close();
+      document.getElementById('close-hint').textContent = 'If this tab stays open, close it using your browser and switch back to Claude Desktop.';
+    });
+  </script>
+</body>
+</html>

@@ -6,7 +6,9 @@
       "args": [
         "--yes",
         "--ignore-scripts",
-        "mcp-remote@0.14.2",
+        "--package=mcp-remote@0.14.2",
+        "node",
+        "${CLAUDE_PLUGIN_ROOT}/runtime/connect.cjs",
         "https://mcp.adzviser.com/http",
         "--transport",
         "http-only",
