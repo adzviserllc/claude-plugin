@@ -2,13 +2,13 @@
 
 Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. The plugin includes eight skills, a marketing analyst agent, and its own Adzviser sign-in. You do not need to install or enable the Adzviser directory connector.
 
-**Release candidate: 1.1.0-rc.3.** The GitHub marketplace offers one plugin: **Adzviser**. This candidate answers Claude's startup request before waiting for browser sign-in, then makes the data tools available in the same conversation. Real account access and a subsequent conversation worked with rc.2 on one Linux Desktop installation. Complete the current [release checks](https://github.com/adzviserllc/claude-plugin/blob/main/docs/testing.md) before directory submission. The latest stable tag remains 1.0.2 and contains the earlier remote connection.
+**Version 1.1.0.** The GitHub marketplace offers one plugin: **Adzviser**. It stays connected while you sign in and makes your data tools available in the same conversation. Workspace discovery, Google Ads reporting, and access in a new conversation were confirmed in Linux Desktop Code. See the [release notes](https://github.com/adzviserllc/claude-plugin/releases/tag/v1.1.0) and [test evidence](https://github.com/adzviserllc/claude-plugin/blob/main/docs/independent-connection-testing.md) for verification and remaining checks.
 
 ## Get started in Claude Desktop Code
 
-You need an [Adzviser account](https://adzviser.com/set-up), a local Code session, and Node.js **22.12+** with npm available to Claude Desktop. Your organization must permit local MCP servers. Cowork, Chat, remote Code sessions, macOS, and Windows have not been verified for this candidate.
+You need an [Adzviser account](https://adzviser.com/set-up), a local Code session, and Node.js **22.12+** with npm available to Claude Desktop. Your organization must permit local MCP servers. Cowork, Chat, remote Code sessions, macOS, and Windows have not been verified for this release.
 
-1. In **Customize → Plugins**, add the marketplace repository `https://github.com/adzviserllc/claude-plugin`. Install **Adzviser**, version **1.1.0-rc.3**. If the marketplace is already added, refresh it and update Adzviser.
+1. In **Customize → Plugins**, add the marketplace repository `https://github.com/adzviserllc/claude-plugin`. Install **Adzviser**, version **1.1.0**. If the marketplace is already added, refresh it and update Adzviser.
 2. Start a new **local Code** conversation in an ordinary working folder, not `.claude`. Claude may ask you to approve the plugin's local connection. Complete the Adzviser browser sign-in when it opens.
 3. Close the confirmation tab using your browser and return to the same Claude conversation. The plugin stays available while you sign in. If you already asked for a report, tell Claude you have finished signing in; otherwise, ask:
 
@@ -17,6 +17,12 @@ Use Adzviser to show my connected accounts and suggest a useful first report.
 ```
 
 You can keep the directory connector disabled. The plugin uses your existing Adzviser account and workspaces through its own connection. For a known reporting task, simply ask the question; a separate setup command is not required.
+
+### Updating an existing Adzviser installation
+
+Refresh the Adzviser marketplace, then update the installed plugin. Fully quit Claude Desktop using its Quit command before reopening it; closing the window can leave the old application running in the system tray. On the tested Linux installation, **Ctrl+Q** quits the application. Confirm the plugin details show **1.1.0**.
+
+Version 1.1.0 contains the same connection runtime and skills as the tested 1.1.0-rc.3 candidate. Your saved Adzviser sign-in stays in the same location; this update does not require signing out or deploying a backend.
 
 ### Upgrading from the Desktop test plugin
 

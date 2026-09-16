@@ -1,4 +1,6 @@
-# Release checks — Adzviser 1.1.0-rc.3
+# Release checks — Adzviser 1.1.0
+
+Version 1.1.0 promotes the tested 1.1.0-rc.3 runtime and skills unchanged. The checks below describe the full acceptance process; the evidence paragraph records which interactive checks have actually been completed.
 
 ## Structure and installation
 
@@ -17,7 +19,7 @@ Use a designated test account. Keep the directory connector disabled, remove the
 5. Confirm the branded callback clears OAuth parameters and gives manual browser-tab closing instructions.
 6. Check that moving from the old test plugin leaves only one installed Adzviser entry and that the new login persists on subsequent updates.
 
-The earlier Desktop experiment completed real sign-in and workspace retrieval on one Linux installation. The tester also confirmed real workspace access in a new rc.2 conversation after its cached startup failure was cleared. Synthetic tests cover authentication, restart, refresh, and slow first sign-in with the current engine. These checks do not establish interactive acceptance of rc.3 or reporting accuracy. Cowork, Chat, remote Code, macOS, and Windows require separate compatibility tests before claiming support.
+On 2026-09-16, the tester confirmed that connection/workspace discovery, Google Ads reporting, period comparison, and access in a new conversation worked on rc.3 in Linux Desktop Code. Screenshots show workspace and reporting calls originating from the plugin, correctly summed displayed daily totals, and missing dates explicitly flagged. The complete comparison analysis was not visible. Synthetic tests cover authentication, restart, refresh, and a 40-second first sign-in with the current engine. A manual delayed first sign-in and matching report results against the source platform remain outstanding. Cowork, Chat, remote Code, macOS, and Windows require separate compatibility tests before claiming support.
 
 ## Behavioral scenarios
 
