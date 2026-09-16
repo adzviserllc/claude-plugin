@@ -2,7 +2,7 @@
 
 This document contains listing copy and the remaining publication steps. A GitHub repository and its own marketplace do not by themselves constitute an Anthropic directory listing.
 
-The repository contains **Adzviser 1.1.0-rc.2**, a single release candidate with the local browser sign-in previously tested in the Desktop experiment. Complete the current [release checks](docs/testing.md) before submission. Real account access was confirmed in the earlier experiment; do not treat the renamed package as fully accepted without retesting.
+The repository contains **Adzviser 1.1.0-rc.3**, a single release candidate that keeps the local MCP connection available while browser sign-in is pending. Complete the current [release checks](docs/testing.md) before submission. Real account access and a subsequent conversation were confirmed with rc.2; the slow-sign-in fix still needs interactive acceptance.
 
 ## Submission values
 
@@ -13,7 +13,7 @@ The repository contains **Adzviser 1.1.0-rc.2**, a single release candidate with
 | Plugin ID | `adzviser` |
 | Suggested display name | Adzviser |
 | Publisher | Adzviser |
-| Version | `1.1.0-rc.2` (repository test candidate; latest stable tag is `1.0.2`) |
+| Version | `1.1.0-rc.3` (repository test candidate; latest stable tag is `1.0.2`) |
 | Categories, if requested | Marketing; Data & Analytics |
 | Website | `https://adzviser.com` |
 | Documentation | `https://github.com/adzviserllc/claude-plugin#readme` |

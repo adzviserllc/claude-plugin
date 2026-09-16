@@ -117,7 +117,9 @@ class Bridge:
                                         text=True, start_new_session=True)
         self.responses = queue.Queue()
         self.stderr = []
-        self.authorization = None
+        self.authorization_file = Path(env['SYNTHETIC_AUTH_URL_FILE'])
+        self.authorize = True
+        self.notifications = []
         def output():
             for line in self.process.stdout:
                 try:
@@ -127,9 +129,6 @@ class Bridge:
         def errors():
             for line in self.process.stderr:
                 self.stderr.append(line)
-                # Only synthetic loopback authorization URLs are ever followed.
-                if line.strip().startswith("http://127.0.0.1:") and "/authorize?" in line:
-                    self.authorization = line.strip()
         threading.Thread(target=output, daemon=True).start()
         threading.Thread(target=errors, daemon=True).start()
 
@@ -145,9 +144,10 @@ class Bridge:
             return
         deadline = time.monotonic() + 90
         while time.monotonic() < deadline:
-            if self.authorization:
-                url = self.authorization
-                self.authorization = None
+            if self.authorize and self.authorization_file.exists():
+                url = self.authorization_file.read_text()
+                self.authorization_file.unlink()
+                assert urlsplit(url).hostname == '127.0.0.1'
                 callback = urlsplit(parse_qs(urlsplit(url).query)["redirect_uri"][0])
                 ready_by = time.monotonic() + 10
                 while True:
@@ -171,6 +171,8 @@ class Bridge:
                     assert "default-src 'none'" in response.headers['Content-Security-Policy']
             try:
                 result = self.responses.get(timeout=0.1)
+                if 'method' in result and 'id' not in result:
+                    self.notifications.append(result['method'])
                 if result.get("id") == ident:
                     assert "error" not in result, result
                     return result["result"]
@@ -180,7 +182,27 @@ class Bridge:
         # All auth values here are synthetic; keep output short even on failures.
         raise AssertionError(f"Bridge failed for {method}: {''.join(self.stderr)[-2200:]}")
 
-    def close(self):
+    def wait_connected(self):
+        deadline = time.monotonic() + 25
+        while time.monotonic() < deadline:
+            result = self.request(80, 'tools/call', {'name': 'adzviser_connection_status', 'arguments': {}})
+            state = result['structuredContent']['state']
+            assert state != 'failed', result
+            if state == 'connected':
+                return
+            time.sleep(.1)
+        raise AssertionError('Connection did not finish')
+
+    def close(self, graceful=False):
+        if graceful:
+            self.process.stdin.close()
+            try:
+                self.process.wait(timeout=8)
+                assert self.process.returncode == 0, 'Gateway should exit cleanly on host disconnect'
+                return
+            except subprocess.TimeoutExpired:
+                self.close()
+                raise AssertionError('Host disconnect left the helper running')
         try:
             os.killpg(self.process.pid, signal.SIGTERM)
             self.process.wait(timeout=5)
@@ -191,7 +213,7 @@ class Bridge:
 
 
 def main():
-    with tempfile.TemporaryDirectory(prefix="adzviser-independent-test-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="adzviser-connection-test-") as temporary:
         root = Path(temporary)
         # Stop browser launch during a synthetic test. Authorization is followed above.
         bin_dir = root / "bin"
@@ -200,6 +222,7 @@ def main():
             executable = bin_dir / name
             executable.write_text("#!/bin/sh\nexit 0\n")
             executable.chmod(0o700)
+        (bin_dir / 'test-browser').write_text('#!/usr/bin/env python3\nimport os,sys\nfrom pathlib import Path\nPath(os.environ["SYNTHETIC_AUTH_URL_FILE"]).write_text(sys.argv[-1])\n')
         server = ThreadingHTTPServer(("127.0.0.1", 0), Fixture)
         threading.Thread(target=server.serve_forever, daemon=True).start()
         config = json.loads((ROOT / ".mcp.json").read_text())["mcpServers"]["adzviser"]
@@ -207,17 +230,32 @@ def main():
         # Do not inherit credentials from the developer or CI environment.
         env = {key: value for key, value in os.environ.items() if key in ("PATH", "HOME", "SYSTEMROOT", "NPM_CONFIG_CACHE", "npm_config_cache")}
         env.update({key: value.replace("${CLAUDE_PLUGIN_DATA}", str(root / "plugin-data")) for key, value in config["env"].items()})
-        env.update(PATH=f"{bin_dir}{os.pathsep}{env['PATH']}", BROWSER=str(bin_dir / "test-browser"), CLAUDE_CONFIG_DIR=str(root / "empty-claude"))
+        env.update(PATH=f"{bin_dir}{os.pathsep}{env['PATH']}", BROWSER=str(bin_dir / "test-browser"), CLAUDE_CONFIG_DIR=str(root / "empty-claude"), SYNTHETIC_AUTH_URL_FILE=str(root / 'authorization-url'))
         try:
             for session in range(3):
                 bridge = Bridge(config, env)
                 try:
-                    bridge.request(1, "initialize", {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "fixture-client", "version": "1"}})
+                    start = time.monotonic()
+                    initialized = bridge.request(1, "initialize", {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "fixture-client", "version": "1"}})
+                    assert time.monotonic() - start < 10, 'Local initialization must not wait for OAuth'
+                    assert initialized['capabilities']['tools']['listChanged'] is True
                     bridge.request(None, "notifications/initialized")
+                    if session == 0:
+                        bridge.authorize = False
+                        tools = bridge.request(2, 'tools/list')['tools']
+                        assert [t['name'] for t in tools] == ['adzviser_connection_status']
+                        pending = bridge.request(3, 'tools/call', {'name': 'list_workspace', 'arguments': {}})
+                        assert pending['isError'] and Fixture.calls == 0
+                        assert bridge.request(4, 'resources/list') == {'resources': []}
+                        assert bridge.request(5, 'prompts/list') == {'prompts': []}
+                        bridge.authorize = True
+                    bridge.wait_connected()
                     tools = bridge.request(2, "tools/list")["tools"]
                     assert any(t["name"] == "list_workspace" for t in tools)
                     data = bridge.request(3, "tools/call", {"name": "list_workspace", "arguments": {}})
                     assert json.loads(data["content"][0]["text"])[0]["name"] == "Fixture workspace"
+                    assert 'notifications/tools/list_changed' in bridge.notifications
+                    assert not any('synthetic-access' in line or '/authorize?' in line for line in bridge.stderr)
                 finally:
                     bridge.close()
                 tokens = list((root / "plugin-data/auth").rglob("*_tokens.json"))
@@ -232,7 +270,33 @@ def main():
             assert Fixture.authorizations == 1, "Restart should reuse authorization"
             assert Fixture.refreshes == 1, "Expired access token must refresh"
             assert Fixture.calls == 3
-            print("PASS: branded callback, packaged stdio bridge, OAuth PKCE, workspace call, restart persistence, token refresh, isolated owner-only token storage. No directory connector used.")
+            # A user who never completes sign-in should get an actionable status,
+            # while the local server remains usable rather than failing startup.
+            failure_env = {**env, 'MCP_REMOTE_CONFIG_DIR': str(root / 'cancelled-auth')}
+            failure_config = {**config, 'args': list(config['args'])}
+            failure_config['args'][failure_config['args'].index('--auth-timeout') + 1] = '2'
+            bridge = Bridge(failure_config, failure_env)
+            bridge.authorize = False
+            try:
+                bridge.request(1, 'initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'fixture-client', 'version': '1'}})
+                bridge.request(None, 'notifications/initialized')
+                deadline = time.monotonic() + 12
+                states = []
+                while time.monotonic() < deadline:
+                    result = bridge.request(2, 'tools/call', {'name': 'adzviser_connection_status', 'arguments': {}})
+                    states.append(result['structuredContent']['state'])
+                    if states[-1] == 'failed':
+                        break
+                    time.sleep(.1)
+                assert 'awaiting_sign_in' in states and states[-1] == 'failed', states
+                assert bridge.request(3, 'ping') == {}
+                assert [t['name'] for t in bridge.request(4, 'tools/list')['tools']] == ['adzviser_connection_status']
+                failed_call = bridge.request(5, 'tools/call', {'name': 'list_workspace', 'arguments': {}})
+                assert failed_call['isError'] and Fixture.calls == 3
+                assert not any('/authorize?' in line or 'synthetic-access' in line for line in bridge.stderr)
+            finally:
+                bridge.close(graceful=True)
+            print("PASS: immediate initialization, pending status, tool-list notification, branded callback, OAuth PKCE, workspace call, restart persistence, token refresh, owner-only storage, sign-in expiry, clean shutdown. No directory connector used.")
         finally:
             server.shutdown()
             server.server_close()

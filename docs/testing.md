@@ -1,8 +1,8 @@
-# Release checks — Adzviser 1.1.0-rc.2
+# Release checks — Adzviser 1.1.0-rc.3
 
 ## Structure and installation
 
-Run the validation, callback tests, integration test, and packaging commands in [README](../README.md#development-and-publishing). Extract the ZIP to a temporary folder and validate its plugin manifest, skills, and agent. Check that relative links between packaged workflows resolve. The ZIP must include `.mcp.json`, eight skills, and all three runtime files.
+Run the validation, callback tests, integration tests, and packaging commands in [README](../README.md#development-and-publishing). Extract the ZIP to a temporary folder and validate its plugin manifest, skills, and agent. Check that relative links between packaged workflows resolve. The ZIP must include `.mcp.json`, eight skills, and all five runtime files.
 
 Add the marketplace in an isolated Claude configuration. Verify that it offers exactly one **Adzviser** plugin, and that its MCP permission prompt names **adzviser**. Install the package at user scope and check discovery from two ordinary project folders.
 
@@ -10,14 +10,14 @@ Add the marketplace in an isolated Claude configuration. Verify that it offers e
 
 Use a designated test account. Keep the directory connector disabled, remove the old `adzviser-desktop` test plugin, and use a new local Code conversation.
 
-1. Install Adzviser and complete its own browser sign-in. Record the number of approval and sign-in steps.
+1. Install Adzviser and complete its own browser sign-in, deliberately taking over 30 seconds. The connection-status tool should be available while waiting, and data tools should appear in the same conversation after sign-in. Record the number of approval and sign-in steps.
 2. Ask for workspaces and connected sources. Verify an actual tool call from `plugin:adzviser:adzviser` and compare the result to the account.
 3. Start another conversation in the same project and repeat without a new sign-in. Restart Desktop and repeat once more.
 4. Ask for a small report and compare dates, metric definitions, and totals to the source platform.
 5. Confirm the branded callback clears OAuth parameters and gives manual browser-tab closing instructions.
 6. Check that moving from the old test plugin leaves only one installed Adzviser entry and that the new login persists on subsequent updates.
 
-The earlier Desktop experiment completed real sign-in and workspace retrieval on one Linux installation. Synthetic tests cover authentication, restart, and refresh. Those checks do not establish interactive persistence or reporting accuracy for this consolidated release. Cowork, Chat, remote Code, macOS, and Windows require separate compatibility tests before claiming support.
+The earlier Desktop experiment completed real sign-in and workspace retrieval on one Linux installation. The tester also confirmed real workspace access in a new rc.2 conversation after its cached startup failure was cleared. Synthetic tests cover authentication, restart, refresh, and slow first sign-in with the current engine. These checks do not establish interactive acceptance of rc.3 or reporting accuracy. Cowork, Chat, remote Code, macOS, and Windows require separate compatibility tests before claiming support.
 
 ## Behavioral scenarios
 
