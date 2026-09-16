@@ -23,13 +23,15 @@ Open **Customize → Plugins**, choose **Add marketplace**, and add this reposit
 https://github.com/adzviserllc/claude-plugin
 ```
 
-Install Adzviser and complete the connection's OAuth sign-in. Alternatively, download `adzviser-1.0.1.zip` from [Releases](https://github.com/adzviserllc/claude-plugin/releases) and use the custom-plugin upload option. Available controls depend on your Claude plan and organization settings. See [Claude's installation guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
+Install Adzviser and complete the connection's OAuth sign-in. Alternatively, download `adzviser-1.0.2.zip` from [Releases](https://github.com/adzviserllc/claude-plugin/releases) and use the custom-plugin upload option. Available controls depend on your Claude plan and organization settings. See [Claude's installation guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
 
 ### Code tab in Claude Desktop
 
-Install through **Customize → Plugins**, then start a new **Local** Code session. Type `/adzviser` in the prompt or open **+ → Plugins** to check that the skills are available in that session. Select `/adzviser:setup` to test the skill directly.
+Install through **Customize → Plugins**, then start a new **Local** Code session in an ordinary working folder. In the slash-command picker, select `/adzviser:setup` or `/setup` with **(adzviser)** in its description, depending on the Desktop version. `/adzviser` alone is not a runnable command. You can also inspect skills under **+ → Plugins**.
 
-Manage the data connection through **+ beside the prompt → Connectors → Manage connectors**. Installing a plugin does not prove its connection is authenticated. A missing tool, a disabled connector, and an authentication error need different fixes; inspect the actual status. See [Claude Desktop's controls](https://code.claude.com/docs/en/desktop#connect-external-tools).
+Under **+ beside the prompt → Connectors**, enable Adzviser. Use **Manage connectors** to connect your account or complete browser sign-in if needed. Keep an existing Adzviser directory connector enabled: the plugin and connector can share the same connection. Then ask the setup skill to list your actual workspaces and connected sources. See [Claude Desktop's controls](https://code.claude.com/docs/en/desktop#connect-external-tools).
+
+If skills appear but Adzviser tools are missing, check the connector's enabled and connected states. A skill appearing does not prove authentication, and a missing tool does not by itself mean credentials expired. The `/mcp` instructions above apply to terminal Claude Code.
 
 ## Requirements
 
@@ -57,7 +59,7 @@ The **marketing-analyst** agent supports more involved multi-source analyses in 
 
 ## How it works
 
-An MCP connector supplies tools and data access. A plugin packages that connection with instructions for completing useful work. This package uses the existing Adzviser service at `https://mcp.adzviser.com/http`; it does not deploy another server.
+An MCP connector supplies tools and data access. A plugin packages that connection with instructions for completing useful work. This package uses the existing Adzviser service at `https://mcp.adzviser.com/http`; it does not deploy another server. Claude can share one set of tools between a plugin and a directory connector pointing at the same server. See [Anthropic's explanation of how they coexist](https://claude.com/docs/connectors/building/what-to-build#how-they-coexist).
 
 The reporting skills discover your workspace and valid fields, resolve dates, retrieve model-visible rows, and calculate results while preserving currency, reporting grain, and attribution differences. Supported sources depend on your connected accounts and the live MCP catalog; examples include Google Ads, Meta Ads, Microsoft Ads, TikTok Ads, LinkedIn Ads, GA4, Search Console, Shopify, WooCommerce, Klaviyo, Amazon, HubSpot, and Salesforce.
 

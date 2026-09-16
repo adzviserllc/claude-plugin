@@ -11,7 +11,7 @@ This document contains listing copy and the remaining publication steps. A GitHu
 | Plugin ID | `adzviser` |
 | Suggested display name | Adzviser Marketing Analytics |
 | Publisher | Adzviser |
-| Version | `1.0.1` |
+| Version | `1.0.2` |
 | Categories, if requested | Marketing; Data & Analytics |
 | Website | `https://adzviser.com` |
 | Documentation | `https://github.com/adzviserllc/claude-plugin#readme` |
@@ -43,9 +43,9 @@ This plugin provides reporting and recommendations. It does not create campaigns
 ## Reviewer setup and sample prompts
 
 1. Install from this public repository or the release ZIP.
-2. Authenticate to Adzviser through the host's OAuth controls. In terminal Claude Code, use `/mcp`. In the Code tab of Claude Desktop, use **+ beside the prompt → Connectors → Manage connectors** in a Local session. Confirm `/adzviser:setup` is available separately from the connection status.
+2. Authenticate to Adzviser through the host's OAuth controls. In terminal Claude Code, use `/mcp`. In the Code tab of Claude Desktop, enable Adzviser under **+ beside the prompt → Connectors** and use **Manage connectors** for account connection or sign-in. Keep the directory connector enabled; it can share the plugin's tool connection. In a Local session, confirm the setup skill is available as `/adzviser:setup` or `/setup` with an Adzviser description, depending on the host.
 3. Use a designated Adzviser review account with a reporting workspace connected to the sources being tested. Account setup starts at `https://adzviser.com/set-up`. If Anthropic requests provisioned access, supply it through their private reviewer-access mechanism, never in this public repository.
-4. Run `/adzviser:setup`, then test representative prompts:
+4. Select the Adzviser setup skill, verify real workspaces, then test representative prompts:
    - “How much did Google Ads spend last month?”
    - “Compare Google Ads and Meta performance last week with the previous week.”
    - “Check month-to-date pacing against a USD 20,000 budget.”

@@ -1,6 +1,6 @@
 {
   "name": "adzviser",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Analyze marketing, analytics, ecommerce, and CRM data with Adzviser. Includes workflows for performance reviews, budget pacing, SEO, ecommerce reporting, and public competitor ad research, connected to Adzviser's remote MCP server through OAuth.",
   "author": {
     "name": "Adzviser",
