@@ -22,7 +22,11 @@ CLAUDE_CONFIG_DIR=/tmp/adzviser-plugin-test claude plugin marketplace add "$PWD"
 CLAUDE_CONFIG_DIR=/tmp/adzviser-plugin-test claude plugin install adzviser@adzviser
 ```
 
-In an interactive session, check the seven `adzviser:` skills, the marketing analyst agent, and the Adzviser MCP server. Authenticate in the browser using `/mcp`, then run `/adzviser:setup`. Test one real report and compare its numbers with the source platform using the same dates and definitions. Test ZIP upload separately in Cowork.
+In an interactive terminal session, check the seven `adzviser:` skills, the marketing analyst agent, and the Adzviser MCP server. Authenticate in the browser using `/mcp`, then run `/adzviser:setup`. In Claude Desktop's Code tab, use a new Local session, select `/adzviser:setup` in the skill picker, and inspect **+ → Connectors → Manage connectors** for connection status. Do not treat skills being installed as proof of MCP authentication.
+
+For a test of the bundled connection, verify which server supplies the tool call: plugin tools can have the `mcp__plugin_adzviser_adzviser__` prefix. A successful call through a separately enabled directory connector only verifies that connector. An absent tool is not evidence of expired credentials, and disabling a directory connector is not proof that the plugin's separate connection loaded. Record the actual server status and tool error before choosing a remedy.
+
+Test one real report and compare its numbers with the source platform using the same dates and definitions. Test ZIP upload separately in Cowork.
 
 ## Behavioral scenarios
 
@@ -30,6 +34,7 @@ Use synthetic fixtures for edge cases or a designated test account. Do not publi
 
 | Prompt or fixture | Expected behavior |
 | --- | --- |
+| Code tab in Desktop; setup skill is available but no Adzviser tools are exposed. | Explains that tools are unavailable, checks Desktop connection controls, and does not invent a dropped connection or direct the user only to a terminal dialog. |
 | “How much did my Meta ads spend last month?” | Connected `fb_ads_request`; real workspace and discovered fields; previous calendar month; no public-library search. |
 | “Compare Google Ads and Meta last week.” Two matching client workspaces. | Ask which workspace before retrieving client reports; use the previous completed week. |
 | “Compare Google and Meta ROAS.” Both platforms attribute the same orders. | Separate platform ROAS; no sum of claimed revenue as deduplicated business revenue. |

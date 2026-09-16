@@ -4,7 +4,7 @@ Turn connected marketing data into performance reviews, pacing checks, SEO insig
 
 ## Install
 
-### Claude Code
+### Claude Code in a terminal
 
 Run these commands inside Claude Code:
 
@@ -23,7 +23,13 @@ Open **Customize → Plugins**, choose **Add marketplace**, and add this reposit
 https://github.com/adzviserllc/claude-plugin
 ```
 
-Install Adzviser and complete the connection's OAuth sign-in. Alternatively, download `adzviser-1.0.0.zip` from [Releases](https://github.com/adzviserllc/claude-plugin/releases) and use the custom-plugin upload option. Available controls depend on your Claude plan and organization settings. See [Claude's installation guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
+Install Adzviser and complete the connection's OAuth sign-in. Alternatively, download `adzviser-1.0.1.zip` from [Releases](https://github.com/adzviserllc/claude-plugin/releases) and use the custom-plugin upload option. Available controls depend on your Claude plan and organization settings. See [Claude's installation guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
+
+### Code tab in Claude Desktop
+
+Install through **Customize → Plugins**, then start a new **Local** Code session. Type `/adzviser` in the prompt or open **+ → Plugins** to check that the skills are available in that session. Select `/adzviser:setup` to test the skill directly.
+
+Manage the data connection through **+ beside the prompt → Connectors → Manage connectors**. Installing a plugin does not prove its connection is authenticated. A missing tool, a disabled connector, and an authentication error need different fixes; inspect the actual status. See [Claude Desktop's controls](https://code.claude.com/docs/en/desktop#connect-external-tools).
 
 ## Requirements
 
