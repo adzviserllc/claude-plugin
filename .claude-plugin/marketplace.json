@@ -14,6 +14,13 @@
       "description": "Marketing analytics and reporting with Adzviser: performance reviews, budget pacing, SEO, ecommerce, and competitor research.",
       "category": "marketing",
       "tags": ["analytics", "advertising", "reporting", "ecommerce", "seo"]
+    },
+    {
+      "name": "adzviser-desktop",
+      "source": "./desktop",
+      "description": "Experimental local Code edition with independent Adzviser browser sign-in. No directory connector required; needs Node.js 22.12+ and npm.",
+      "category": "marketing",
+      "tags": ["analytics", "experimental", "desktop", "reporting"]
     }
   ]
 }

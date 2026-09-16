@@ -4,6 +4,8 @@ Turn connected marketing data into performance reviews, pacing checks, SEO insig
 
 > The repository's `main` branch contains test candidate **1.1.0-rc.1**. The new starting skill and connection guidance have not yet passed an interactive Desktop onboarding test. The latest stable tagged release remains **1.0.2**.
 
+**Testing an independent Desktop connection?** The marketplace also contains experimental **adzviser-desktop 0.1.0-rc.1**. It uses a local helper with its own browser sign-in, allowing the directory connector to remain disabled. Requires Node.js 22.12+ and npm. Follow the [separate installation and test guide](https://github.com/adzviserllc/claude-plugin/blob/main/desktop/README.md); the instructions below describe the original remote edition.
+
 ## Get started in Claude Desktop
 
 You need an [Adzviser account](https://adzviser.com/set-up) with the source accounts you want to analyze. If you already connected Adzviser to Claude, keep that connection enabled and reuse it.
@@ -101,6 +103,8 @@ Build the uploadable ZIP with Python 3:
 ```bash
 python3 scripts/package_plugin.py
 ```
+
+For the experimental Desktop edition, run `python3 scripts/build_desktop.py`, then `python3 scripts/package_plugin.py --edition desktop`. CI checks that generated workflow copies match their sources and exercises OAuth, tool calls, and saved-login reuse against a local fixture with synthetic credentials.
 
 The packager includes only plugin runtime files, README, and license. It excludes Git history, development scripts, submission notes, and marketplace metadata. Follow the [smoke checks](https://github.com/adzviserllc/claude-plugin/blob/main/docs/testing.md) before releasing. Bump `version` in `.claude-plugin/plugin.json` for each update; it is the version source of truth.
 

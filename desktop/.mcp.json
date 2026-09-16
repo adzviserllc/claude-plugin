@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "adzviser-independent": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "--yes",
+        "--ignore-scripts",
+        "mcp-remote@0.14.2",
+        "https://mcp.adzviser.com/http",
+        "--transport",
+        "http-only",
+        "--auth-timeout",
+        "300",
+        "--static-oauth-client-metadata",
+        "{\"client_name\":\"Adzviser-Desktop-Plugin\"}"
+      ],
+      "env": {
+        "MCP_REMOTE_CONFIG_DIR": "${CLAUDE_PLUGIN_DATA}/auth",
+        "NPM_CONFIG_IGNORE_SCRIPTS": "true"
+      }
+    }
+  }
+}

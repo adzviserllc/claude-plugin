@@ -15,23 +15,24 @@ CONTENT_DIRS = ("skills", "agents", "assets")
 CONTENT_SUFFIXES = {".md", ".json", ".svg", ".png"}
 
 
-def package(output_dir: Path) -> Path:
-    manifest = json.loads((ROOT / ROOT_FILES[0]).read_text())
+def package(output_dir: Path, root: Path = ROOT) -> Path:
+    root = root.resolve()
+    manifest = json.loads((root / ROOT_FILES[0]).read_text())
     name, version = manifest["name"], manifest["version"]
     if not re.fullmatch(r"[a-z][a-z0-9-]*", name):
         raise ValueError("Invalid plugin name")
     if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?", version):
         raise ValueError("Invalid release version")
-    paths = [ROOT / item for item in ROOT_FILES]
+    paths = [root / item for item in ROOT_FILES]
     for directory in CONTENT_DIRS:
-        base = ROOT / directory
+        base = root / directory
         if base.is_symlink():
             raise ValueError(f"Refusing symlink: {base}")
         for path in sorted(base.rglob("*")):
             if path.is_symlink():
                 raise ValueError(f"Refusing symlink: {path}")
             if path.is_file():
-                relative = path.relative_to(ROOT)
+                relative = path.relative_to(root)
                 if any(part.startswith(".") for part in relative.parts):
                     raise ValueError(f"Unexpected hidden file: {relative}")
                 if path.suffix not in CONTENT_SUFFIXES:
@@ -40,14 +41,14 @@ def package(output_dir: Path) -> Path:
     if not any(path.name == "SKILL.md" for path in paths):
         raise ValueError("No skills found")
     for path in paths:
-        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(ROOT):
+        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root):
             raise ValueError(f"Invalid distributable path: {path}")
 
     output_dir.mkdir(parents=True, exist_ok=True)
     archive = output_dir / f"{name}-{version}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
         for path in sorted(paths):
-            info = zipfile.ZipInfo(path.relative_to(ROOT).as_posix(), (2026, 1, 1, 0, 0, 0))
+            info = zipfile.ZipInfo(path.relative_to(root).as_posix(), (2026, 1, 1, 0, 0, 0))
             info.create_system = 3
             info.external_attr = 0o100644 << 16
             info.compress_type = zipfile.ZIP_DEFLATED
@@ -61,4 +62,6 @@ def package(output_dir: Path) -> Path:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "dist")
-    package(parser.parse_args().output_dir)
+    parser.add_argument("--edition", choices=("remote", "desktop"), default="remote")
+    args = parser.parse_args()
+    package(args.output_dir, ROOT / "desktop" if args.edition == "desktop" else ROOT)
