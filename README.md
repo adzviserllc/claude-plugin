@@ -1,57 +1,52 @@
 # Adzviser for Claude
 
-Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. Start with a question; Adzviser checks access and guides you into the relevant workflow. The plugin includes eight skills and a marketing analyst agent.
+Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. The plugin includes eight skills, a marketing analyst agent, and its own Adzviser sign-in. You do not need to install or enable the Adzviser directory connector.
 
-> The repository's `main` branch contains test candidate **1.1.0-rc.1**. The new starting skill and connection guidance have not yet passed an interactive Desktop onboarding test. The latest stable tagged release remains **1.0.2**.
+**Release candidate: 1.1.0-rc.2.** The GitHub marketplace now offers one plugin: **Adzviser**. It includes the local connection previously tested as Adzviser desktop. Real sign-in and workspace access worked in one Linux Desktop installation; the consolidated package still needs the interactive checks in [testing.md](https://github.com/adzviserllc/claude-plugin/blob/main/docs/testing.md) before directory submission. The latest stable tag remains 1.0.2 and contains the earlier remote connection.
 
-**Testing an independent Desktop connection?** The marketplace also contains experimental **adzviser-desktop 0.1.0-rc.3**, with a branded sign-in confirmation page. It uses a local helper with its own browser sign-in, allowing the directory connector to remain disabled. Requires Node.js 22.12+ and npm. Follow the [separate installation and test guide](https://github.com/adzviserllc/claude-plugin/blob/main/desktop/README.md); the instructions below describe the original remote edition.
+## Get started in Claude Desktop Code
 
-## Get started in Claude Desktop
+You need an [Adzviser account](https://adzviser.com/set-up), a local Code session, and Node.js **22.12+** with npm available to Claude Desktop. Your organization must permit local MCP servers. Cowork, Chat, remote Code sessions, macOS, and Windows have not been verified for this candidate.
 
-You need an [Adzviser account](https://adzviser.com/set-up) with the source accounts you want to analyze. If you already connected Adzviser to Claude, keep that connection enabled and reuse it.
-
-1. In **Customize → Plugins**, choose **Add marketplace → Add from a repository**, enter `https://github.com/adzviserllc/claude-plugin`, and install Adzviser. The repository currently provides **1.1.0-rc.1**. If the marketplace is already added, refresh it and update the installed plugin using the available controls. Confirm the displayed version is **1.1.0-rc.1** before testing; an existing installation may still be on an older version.
-2. Start a conversation and ask:
+1. In **Customize → Plugins**, add the marketplace repository `https://github.com/adzviserllc/claude-plugin`. Install **Adzviser**, version **1.1.0-rc.2**. If the marketplace is already added, refresh it and update Adzviser.
+2. Start a new **local Code** conversation in an ordinary working folder, not `.claude`. Claude may ask you to approve the plugin's local connection. Complete the Adzviser browser sign-in when it opens.
+3. Close the confirmation tab using your browser and return to Claude Desktop. Ask:
 
 ```text
 Use Adzviser to show my connected accounts and suggest a useful first report.
 ```
 
-If your data is already accessible, the workflow should proceed without another login. Otherwise, it gives you the relevant connection step. In the **Code tab**, open **+ beside the prompt → Connectors** and enable Adzviser. Use **Manage connectors** for sign-in. If Adzviser is absent, open [Connect Adzviser](https://claude.ai/directory/adzviser) using the same Claude account and organization, complete browser authorization, then return to the conversation. In **Cowork**, use **Customize → Connectors**. Reply **done** in the same conversation to continue the pending request.
+You can keep the directory connector disabled. The plugin uses your existing Adzviser account and workspaces through its own connection. For a known reporting task, simply ask the question; a separate setup command is not required.
 
-For a Code session, choose a normal working folder, not `.claude`. If you prefer a command, select the **Adzviser** starting skill from the slash-command picker: Desktop may display `/adzviser`, while terminal Claude Code uses `/adzviser:adzviser`. The existing setup skill remains available as `/setup` or `/adzviser:setup`. The starting skill is included in this candidate; version 1.0.2 has the setup skill only.
+### Upgrading from the Desktop test plugin
 
-**Current Desktop limitation:** installing our GitHub plugin has not been shown to automatically establish its data connection. Our successful Desktop test used the plugin with an enabled Adzviser connector. This candidate improves guidance and task continuation; it does not remove that connection step or implement an automatic sign-in window. See [Desktop's connection controls](https://code.claude.com/docs/en/desktop#connect-external-tools) and [Claude's plugin installation guide](https://support.claude.com/en/articles/13837440-use-plugins-in-claude).
+If you installed **Adzviser desktop** (`adzviser-desktop`), remove that old test plugin and install/update **Adzviser** from the refreshed marketplace. The catalog no longer offers two editions. An already installed test copy can remain in Yours until removed.
+
+The new plugin identity has its own saved-login location, so expect to sign in once when moving from the test plugin. We do not copy credentials from the test plugin or directory connector. Future updates keep the same Adzviser identity. Restart Desktop after updating to load the new package.
 
 ## Claude Code in a terminal
 
-Run these commands inside terminal Claude Code, not in a normal shell or Desktop chat:
+Enter these commands inside Claude Code, not in your normal shell:
 
 ```text
 /plugin marketplace add adzviserllc/claude-plugin
 /plugin install adzviser@adzviser
 ```
 
-Restart your session if prompted, then ask the same getting-started question above. If sign-in is needed, open `/mcp`, select Adzviser, and complete browser authorization. This uses the plugin's declared connection. An isolated terminal check reached the sign-in requirement; a first-time authenticated terminal report still needs verification.
+Use user scope to make the plugin available across projects, or project scope for one project. The same package starts its local helper and opens browser sign-in when needed. Use `/mcp` to inspect the Adzviser connection if it fails to start.
 
 ## If something gets stuck
 
 | What you see | Next step |
 | --- | --- |
-| An Adzviser skill appears, but it cannot access data | Check Adzviser under Connectors in Desktop. The skill loaded; repeated plugin installation is not the first fix. |
-| Adzviser is connected and enabled, but tools remain unavailable | Share the visible status/error with [support](https://adzviser.com/contact-us). Do not keep reinstalling or signing in. |
-| Your workspace appears, but a requested source is missing | Add that account in [Adzviser setup](https://adzviser.com/set-up); the Claude connection is already working. |
-| `/adzviser` is unavailable | Ask in ordinary language or use the Adzviser setup entry. Command labels depend on your host and installed version. |
+| Skills appear but data tools are missing | Check the plugin's Adzviser server status in Claude's MCP controls (`/mcp` where available). Do not keep reinstalling. |
+| `npx` cannot be found | Make Node.js 22.12+ and npm available to Claude Desktop, then restart it. |
+| Sign-in timed out | Finish browser sign-in, then reconnect the server or start a new local conversation and retry the question. |
+| Your workspace appears but a source is missing | Add the source account in [Adzviser setup](https://adzviser.com/set-up). |
+| No `/adzviser` command | Ask in ordinary language or select the Adzviser setup skill. Labels vary by host; also check installation scope and enablement. |
+| Connected status but tools still missing | Share the visible status/error with [support](https://adzviser.com/contact-us), without credentials or raw authentication logs. |
 
-Connection authorization always happens through the browser or Claude's own controls. Never paste a password or access token into the conversation.
-
-## Requirements
-
-- An Adzviser account with access to the requested data sources. See [current plans](https://adzviser.com/pricing).
-- A [workspace](https://docs.adzviser.com/getStarted/workspace) containing the accounts you want to analyze. Create and manage connections at [Adzviser setup](https://adzviser.com/set-up).
-- A Claude environment that supports plugins and remote MCP connections. Use an up-to-date Claude Code release for plugin skills.
-
-Public competitor-ad and PageSpeed requests do not require a workspace, but still require Adzviser authentication and applicable access. You do not need to paste an API key into this plugin.
+Public competitor-ad and PageSpeed requests do not require a workspace, but still require authentication and applicable account access. Never paste passwords, codes, or tokens into a conversation.
 
 ## Included workflows
 
@@ -70,48 +65,36 @@ Ask a matching question in ordinary language, or select a skill from the command
 
 The **marketing-analyst** agent supports more involved multi-source analyses in hosts that support plugin agents. The skills also work without delegating to the agent.
 
-## How it works
+## Connection and permissions
 
-An MCP connector supplies tools and data access. A plugin packages that connection with instructions for completing useful work. This package uses the existing Adzviser service at `https://mcp.adzviser.com/http`; it does not deploy another server. Claude can share one set of tools between a plugin and a directory connector pointing at the same server. See [Anthropic's explanation of how they coexist](https://claude.com/docs/connectors/building/what-to-build#how-they-coexist).
+The plugin declares one local MCP server named **adzviser**. Its Node.js launcher runs the pinned `mcp-remote@0.14.2` helper, which connects to `https://mcp.adzviser.com/http` using browser OAuth with PKCE. The helper is downloaded from npm on first use with installation scripts disabled. The top-level version is pinned; npm resolves its dependency ranges.
 
-The reporting skills discover your workspace and valid fields, resolve dates, retrieve model-visible rows, and calculate results while preserving currency, reporting grain, and attribution differences. Supported sources depend on your connected accounts and the live MCP catalog; examples include Google Ads, Meta Ads, Microsoft Ads, TikTok Ads, LinkedIn Ads, GA4, Search Console, Shopify, WooCommerce, Klaviyo, Amazon, HubSpot, and Salesforce.
+Claude shows a permission prompt because this helper runs locally with your user account's OS permissions. Renaming the server does not narrow those permissions. The helper handles MCP messages, reporting results, and its own OAuth files. The plugin does not add a filesystem-browsing MCP tool or installation hook. The skills may use Claude's file and calculation tools for requested analysis and exports.
 
-The plugin reads reports and recommends next steps. It does not create campaigns, change bids or budgets, or schedule recurring jobs. Public ad research does not expose competitors' private spend or conversions.
+The helper stores its authorization under `${CLAUDE_PLUGIN_DATA}/auth`, separately from the directory connector. Claude determines that directory; it can vary by installation method. Credential files have owner-only permissions on Unix. Do not share them. The local callback page contains no external resources and clears the authorization parameters from the address bar. A successful tool call confirms actual account access.
 
-## Data and permissions
-
-The bundle contains Markdown instructions, JSON configuration, and the Adzviser icon. It has no installation hooks, bundled executable server, or plugin-side telemetry. Claude connects to Adzviser through OAuth and uses Adzviser's service to retrieve requested source data. The hosted service's handling of data is covered by the [Adzviser privacy policy](https://docs.adzviser.com/privacy) and [terms](https://docs.adzviser.com/terms).
-
-The skills may use Claude's local calculation or file tools to analyze rows and create requested exports. They do not require broad file scans, credentials in chat, or public sharing of account reports. Follow your organization's data-access rules.
+The plugin adds no Adzviser-specific telemetry. The hosted service is covered by [Adzviser's privacy policy](https://docs.adzviser.com/privacy) and [terms](https://docs.adzviser.com/terms). It retrieves reports and recommends actions; it does not change campaigns or schedule recurring jobs.
 
 ## Development and publishing
 
-This repository is a self-contained plugin and marketplace. Skills live at the root-level `skills/` directory; manifests live in `.claude-plugin/`. Each skill supplies its own slash command, so there is no duplicate `commands/` directory.
-
-Validate both manifests explicitly, then load the plugin:
+There is one package at the repository root. Edit `skills/`, `agents/`, and `runtime/` directly. The marketplace has one entry pointing at that package. Bump `.claude-plugin/plugin.json` for each release.
 
 ```bash
 claude plugin validate .claude-plugin/plugin.json --strict
 claude plugin validate .claude-plugin/marketplace.json --strict
 claude plugin validate skills --strict
 claude plugin validate agents --strict
-claude --plugin-dir .
-```
-
-Build the uploadable ZIP with Python 3:
-
-```bash
+node --test scripts/callback-page.test.cjs
+python3 scripts/test_desktop_connection.py
 python3 scripts/package_plugin.py
 ```
 
-For the experimental Desktop edition, run `python3 scripts/build_desktop.py`, then `python3 scripts/package_plugin.py --edition desktop`. CI checks that generated workflow copies match their sources and exercises OAuth, tool calls, and saved-login reuse against a local fixture with synthetic credentials.
+The synthetic integration test exercises OAuth, workspace retrieval, saved-login reuse, and refresh without customer credentials. The ZIP includes only distributable plugin files. Follow [release checks](https://github.com/adzviserllc/claude-plugin/blob/main/docs/testing.md) and [submission instructions](https://github.com/adzviserllc/claude-plugin/blob/main/SUBMISSION.md) before submitting to Anthropic. Adding our GitHub marketplace does not publish the plugin in Anthropic's directory.
 
-The packager includes only plugin runtime files, README, and license. It excludes Git history, development scripts, submission notes, and marketplace metadata. Follow the [smoke checks](https://github.com/adzviserllc/claude-plugin/blob/main/docs/testing.md) before releasing. Bump `version` in `.claude-plugin/plugin.json` for each update; it is the version source of truth.
-
-See [submission instructions and listing copy](https://github.com/adzviserllc/claude-plugin/blob/main/SUBMISSION.md) for the separate Anthropic directory review, and [competitor research](https://github.com/adzviserllc/claude-plugin/blob/main/docs/competitive-research.md) for the design rationale. A repository marketplace is directly installable; an Anthropic directory listing requires their review.
+No backend deployment or `mcp/deploy.sh` run is needed for this package update. Earlier editions remain in Git history and existing tags.
 
 ## Support and license
 
-[Setup guide](https://docs.adzviser.com/claude/mcp-integration-guide) · [Troubleshooting](https://docs.adzviser.com/troubleshoot) · [Contact](https://adzviser.com/contact-us)
+[Account setup](https://adzviser.com/set-up) · [Troubleshooting](https://docs.adzviser.com/troubleshoot) · [Contact](https://adzviser.com/contact-us)
 
-Plugin source: [Apache License 2.0](LICENSE), consistent with Adzviser's existing Claude skill. The Adzviser service is governed by its own terms.
+Plugin source: [Apache License 2.0](LICENSE). The Adzviser service is governed by its own terms.

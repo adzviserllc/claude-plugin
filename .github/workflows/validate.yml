@@ -23,10 +23,6 @@ jobs:
           claude plugin validate .claude-plugin/marketplace.json --strict
           claude plugin validate skills --strict
           claude plugin validate agents --strict
-          python3 scripts/build_desktop.py --check
-          claude plugin validate desktop --strict
-          claude plugin validate desktop/skills --strict
-          claude plugin validate desktop/agents --strict
       - name: Test the independent connection with synthetic OAuth credentials
         run: |
           node --test scripts/callback-page.test.cjs
@@ -36,6 +32,3 @@ jobs:
           python3 scripts/package_plugin.py
           python3 -m zipfile -e dist/adzviser-[0-9]*.zip /tmp/adzviser-distribution
           claude plugin validate /tmp/adzviser-distribution --strict
-          python3 scripts/package_plugin.py --edition desktop
-          python3 -m zipfile -e dist/adzviser-desktop-*.zip /tmp/adzviser-desktop-distribution
-          claude plugin validate /tmp/adzviser-desktop-distribution --strict

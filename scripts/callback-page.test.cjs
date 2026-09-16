@@ -3,7 +3,7 @@ const { test, after } = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
 const { once } = require('node:events');
-const { installCallbackPage } = require('../desktop/runtime/callback-page.cjs');
+const { installCallbackPage } = require('../runtime/callback-page.cjs');
 
 installCallbackPage();
 const originalSuccess = 'Authorization successful! You may close this window and return to the CLI.';

@@ -6,7 +6,7 @@ Follow the [connection guidance](../../setup/references/connection.md) before re
 
 ## Select the data path
 
-Use the Adzviser tools exposed by the current session, not a guessed HTTP API. In terminal Claude Code, a tool can appear as `mcp__plugin_adzviser_adzviser__retrieve_reporting_data`; Desktop may supply it through the shared Adzviser connector with a different prefix. Do not require a plugin-specific prefix or ask users to disable that connector. The names below are the unprefixed tool names.
+Use the tools supplied by the plugin's Adzviser connection, following the connection guidance above. Do not use a guessed HTTP API or silently substitute the directory connector. Tool name punctuation varies by host; check the tool's origin. The names below are the unprefixed tool names.
 
 - Connected-account performance uses that source's account request, such as `google_ads_request` or `fb_ads_request`.
 - Public competitor research uses `google_ads_transparency_request` or `meta_ad_library_request`. Those searches do not supply competitors' private performance metrics. A brand name alone is not evidence that the user wants a public search.

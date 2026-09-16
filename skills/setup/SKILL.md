@@ -7,7 +7,7 @@ description: Connect Adzviser and discover available workspaces, source accounts
 
 Read the [connection guidance](references/connection.md). Check actual access before asking the user to sign in. If a connection step is necessary, give only the relevant next action and continue the original request after the user completes it.
 
-1. Use the workspace result from the connection check to report the actual workspaces and source accounts. Do not call `list_workspace` again just to complete this skill. Using the shared connection is sufficient; a second plugin-specific connection is not required.
+1. Use the workspace result from the connection check to report the actual workspaces and source accounts. Do not call `list_workspace` again just to complete this skill. Use the plugin's data connection as described in the connection guidance.
 2. If access fails, follow the connection guidance and pause. Do not present invented accounts or a completed setup screen. If workspace lookup succeeds, say what is available in a compact table or sentence; do not show the user the internal connection checks.
 3. If no workspace contains the requested source, explain what is missing and link to [Adzviser setup](https://adzviser.com/set-up) and the [workspace guide](https://docs.adzviser.com/getStarted/workspace). Connecting a plugin does not create a workspace or connect advertising accounts.
 4. If the user asks about available fields, call the relevant discovery tool for that source. Do not enumerate every source's catalog just to complete setup.

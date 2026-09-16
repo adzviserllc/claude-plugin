@@ -1,7 +1,7 @@
 {
   "name": "adzviser",
-  "version": "1.1.0-rc.1",
-  "description": "Analyze marketing, analytics, ecommerce, and CRM data with Adzviser. Includes workflows for performance reviews, budget pacing, SEO, ecommerce reporting, and public competitor ad research, connected to Adzviser's remote MCP server through OAuth.",
+  "version": "1.1.0-rc.2",
+  "description": "Analyze marketing, analytics, ecommerce, and CRM data with Adzviser. Includes eight workflows and its own browser sign-in. For local Claude Code; requires Node.js 22.12+ and npm.",
   "author": {
     "name": "Adzviser",
     "email": "zeyuan.gu@adzviser.com",
@@ -11,7 +11,16 @@
   "repository": "https://github.com/adzviserllc/claude-plugin",
   "license": "Apache-2.0",
   "keywords": [
-    "marketing", "analytics", "reporting", "google-ads", "meta-ads",
-    "google-analytics", "seo", "ecommerce", "shopify", "crm", "mcp"
+    "marketing",
+    "analytics",
+    "reporting",
+    "google-ads",
+    "meta-ads",
+    "google-analytics",
+    "seo",
+    "ecommerce",
+    "shopify",
+    "crm",
+    "mcp"
   ]
 }

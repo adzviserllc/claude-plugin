@@ -202,8 +202,8 @@ def main():
             executable.chmod(0o700)
         server = ThreadingHTTPServer(("127.0.0.1", 0), Fixture)
         threading.Thread(target=server.serve_forever, daemon=True).start()
-        config = json.loads((ROOT / "desktop/.mcp.json").read_text())["mcpServers"]["adzviser-independent"]
-        config["args"] = [arg.replace("https://mcp.adzviser.com/http", f"http://127.0.0.1:{server.server_port}/mcp").replace("${CLAUDE_PLUGIN_ROOT}", str(ROOT / "desktop")) for arg in config["args"]]
+        config = json.loads((ROOT / ".mcp.json").read_text())["mcpServers"]["adzviser"]
+        config["args"] = [arg.replace("https://mcp.adzviser.com/http", f"http://127.0.0.1:{server.server_port}/mcp").replace("${CLAUDE_PLUGIN_ROOT}", str(ROOT)) for arg in config["args"]]
         # Do not inherit credentials from the developer or CI environment.
         env = {key: value for key, value in os.environ.items() if key in ("PATH", "HOME", "SYSTEMROOT", "NPM_CONFIG_CACHE", "npm_config_cache")}
         env.update({key: value.replace("${CLAUDE_PLUGIN_DATA}", str(root / "plugin-data")) for key, value in config["env"].items()})

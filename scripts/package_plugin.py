@@ -64,6 +64,5 @@ def package(output_dir: Path, root: Path = ROOT) -> Path:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "dist")
-    parser.add_argument("--edition", choices=("remote", "desktop"), default="remote")
     args = parser.parse_args()
-    package(args.output_dir, ROOT / "desktop" if args.edition == "desktop" else ROOT)
+    package(args.output_dir)
