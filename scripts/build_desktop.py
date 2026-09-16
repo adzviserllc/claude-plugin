@@ -44,7 +44,7 @@ def expected_files():
     manifest = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
     manifest.update(
         name="adzviser-desktop",
-        version="0.1.0-rc.2",
+        version="0.1.0-rc.3",
         description="Experimental Adzviser for local Claude Code: marketing workflows with an independent browser sign-in. No directory connector required. Requires Node.js 22.12+ and npm.",
     )
     files[".claude-plugin/plugin.json"] = (json.dumps(manifest, indent=2) + "\n").encode()

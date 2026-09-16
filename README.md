@@ -4,7 +4,7 @@ Turn connected marketing data into performance reviews, pacing checks, SEO insig
 
 > The repository's `main` branch contains test candidate **1.1.0-rc.1**. The new starting skill and connection guidance have not yet passed an interactive Desktop onboarding test. The latest stable tagged release remains **1.0.2**.
 
-**Testing an independent Desktop connection?** The marketplace also contains experimental **adzviser-desktop 0.1.0-rc.2**, with a branded sign-in confirmation page. It uses a local helper with its own browser sign-in, allowing the directory connector to remain disabled. Requires Node.js 22.12+ and npm. Follow the [separate installation and test guide](https://github.com/adzviserllc/claude-plugin/blob/main/desktop/README.md); the instructions below describe the original remote edition.
+**Testing an independent Desktop connection?** The marketplace also contains experimental **adzviser-desktop 0.1.0-rc.3**, with a branded sign-in confirmation page. It uses a local helper with its own browser sign-in, allowing the directory connector to remain disabled. Requires Node.js 22.12+ and npm. Follow the [separate installation and test guide](https://github.com/adzviserllc/claude-plugin/blob/main/desktop/README.md); the instructions below describe the original remote edition.
 
 ## Get started in Claude Desktop
 
