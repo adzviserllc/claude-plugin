@@ -243,15 +243,25 @@ def main():
                     assert time.monotonic() - start < 10, 'Local initialization must not wait for OAuth'
                     assert initialized['capabilities']['tools']['listChanged'] is True
                     bridge.request(None, "notifications/initialized")
+                    idle = bridge.request(6, 'tools/call', {'name': 'adzviser_connection_status', 'arguments': {}})
+                    assert idle['structuredContent']['state'] == 'idle'
                     if session == 0:
                         bridge.authorize = False
                         tools = bridge.request(2, 'tools/list')['tools']
-                        assert [t['name'] for t in tools] == ['adzviser_connection_status']
+                        assert [t['name'] for t in tools] == ['adzviser_connection_status', 'adzviser_connect']
                         pending = bridge.request(3, 'tools/call', {'name': 'list_workspace', 'arguments': {}})
                         assert pending['isError'] and Fixture.calls == 0
                         assert bridge.request(4, 'resources/list') == {'resources': []}
                         assert bridge.request(5, 'prompts/list') == {'prompts': []}
+                        # Cowork may load this server beside an authorized remote
+                        # connection. Discovery and status must never open OAuth.
+                        time.sleep(2)
+                        assert Fixture.registrations == Fixture.authorizations == 0
+                        assert not bridge.authorization_file.exists()
+                        assert not (root / 'plugin-data/auth').exists()
                         bridge.authorize = True
+                    for ident in (7, 8):
+                        bridge.request(ident, 'tools/call', {'name': 'adzviser_connect', 'arguments': {}})
                     bridge.wait_connected()
                     tools = bridge.request(2, "tools/list")["tools"]
                     assert any(t["name"] == "list_workspace" for t in tools)
@@ -259,6 +269,8 @@ def main():
                     assert json.loads(data["content"][0]["text"])[0]["name"] == "Fixture workspace"
                     assert 'notifications/tools/list_changed' in bridge.notifications
                     assert not any('synthetic-access' in line or '/authorize?' in line for line in bridge.stderr)
+                    again = bridge.request(9, 'tools/call', {'name': 'adzviser_connect', 'arguments': {}})
+                    assert again['structuredContent']['state'] == 'connected'
                 finally:
                     bridge.close()
                 tokens = list((root / "plugin-data/auth").rglob("*_tokens.json"))
@@ -275,7 +287,8 @@ def main():
             assert Fixture.calls == 3
             # A user who never completes sign-in should get an actionable status,
             # while the local server remains usable rather than failing startup.
-            failure_env = {**env, 'MCP_REMOTE_CONFIG_DIR': str(root / 'cancelled-auth')}
+            failure_env = {**env, 'MCP_REMOTE_CONFIG_DIR': str(root / 'cancelled-auth'),
+                           'SYNTHETIC_AUTH_URL_FILE': str(root / 'cancelled-authorization-url')}
             failure_config = {**config, 'args': list(config['args'])}
             failure_config['args'][failure_config['args'].index('--auth-timeout') + 1] = '2'
             bridge = Bridge(failure_config, failure_env)
@@ -283,6 +296,7 @@ def main():
             try:
                 bridge.request(1, 'initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'fixture-client', 'version': '1'}})
                 bridge.request(None, 'notifications/initialized')
+                bridge.request(6, 'tools/call', {'name': 'adzviser_connect', 'arguments': {}})
                 deadline = time.monotonic() + 12
                 states = []
                 while time.monotonic() < deadline:
@@ -293,13 +307,23 @@ def main():
                     time.sleep(.1)
                 assert 'awaiting_sign_in' in states and states[-1] == 'failed', states
                 assert bridge.request(3, 'ping') == {}
-                assert [t['name'] for t in bridge.request(4, 'tools/list')['tools']] == ['adzviser_connection_status']
+                assert [t['name'] for t in bridge.request(4, 'tools/list')['tools']] == ['adzviser_connection_status', 'adzviser_connect']
                 failed_call = bridge.request(5, 'tools/call', {'name': 'list_workspace', 'arguments': {}})
                 assert failed_call['isError'] and Fixture.calls == 3
                 assert not any('/authorize?' in line or 'synthetic-access' in line for line in bridge.stderr)
             finally:
                 bridge.close(graceful=True)
-            print("PASS: immediate initialization, pending status, tool-list notification, branded callback, OAuth PKCE, workspace call, restart persistence, token refresh, owner-only storage, sign-in expiry, clean shutdown. No directory connector used.")
+            # Closing an unused local route must also be clean, without starting
+            # OAuth or disturbing the saved credentials.
+            bridge = Bridge(config, env)
+            bridge.authorize = False
+            try:
+                bridge.request(1, 'initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'fixture-client', 'version': '1'}})
+                bridge.request(None, 'notifications/initialized')
+                assert bridge.request(2, 'tools/call', {'name': 'adzviser_connection_status', 'arguments': {}})['structuredContent']['state'] == 'idle'
+            finally:
+                bridge.close(graceful=True)
+            print("PASS: idle startup without OAuth, explicit and idempotent local connection, pending status, tool-list notification, branded callback, OAuth PKCE, workspace call, restart persistence, token refresh, owner-only storage, sign-in expiry, clean idle/active shutdown. No directory connector used.")
         finally:
             server.shutdown()
             server.server_close()

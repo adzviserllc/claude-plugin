@@ -6,13 +6,22 @@ import { readFileSync } from 'node:fs';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const version = JSON.parse(readFileSync(path.join(root, '../.claude-plugin/plugin.json'), 'utf8')).version;
 const STATUS_TOOL = 'adzviser_connection_status';
+const CONNECT_TOOL = 'adzviser_connect';
 const statusTool = {
   name: STATUS_TOOL,
   title: 'Adzviser connection status',
-  description: 'Check whether Adzviser is connecting, waiting for browser sign-in, connected, or unavailable. If sign-in is pending, ask the user to finish it; check once after they return, then discover the data tools and continue their original request. Do not poll repeatedly.',
+  description: 'Read the local Adzviser connection status without starting sign-in. In local Claude Code, call adzviser_connect if idle and local access is needed. In Cowork, use the remote Adzviser connection. If local sign-in is pending, check once after the user returns, then discover data tools and continue their request. Do not poll repeatedly.',
   inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 };
+const connectTool = {
+  name: CONNECT_TOOL,
+  title: 'Connect Adzviser in local Claude Code',
+  description: 'Start the local Adzviser connection when using Claude Code terminal or a local Desktop Code session. Reuses this helper’s saved login, or opens a browser for authorization. Do not call this for Cowork or remote access; use the remote Adzviser connection and its host-managed sign-in there. Calling again during connection or after success does not start another helper.',
+  inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+};
+const localTools = [statusTool, connectTool];
 
 export async function startConnectionServer(sdkRoot, args) {
   const timeoutIndex = args.indexOf('--auth-timeout');
@@ -32,7 +41,7 @@ export async function startConnectionServer(sdkRoot, args) {
     env: process.env,
     stderr: 'pipe',
   });
-  let state = 'connecting';
+  let state = 'idle';
   let initialized = false;
   let started = false;
   let closing = false;
@@ -40,6 +49,7 @@ export async function startConnectionServer(sdkRoot, args) {
 
   function status() {
     const messages = {
+      idle: 'The local Adzviser connection has not been started. In local Claude Code, call adzviser_connect when local data access is needed. In Cowork, use the remote Adzviser connection and its Connect / Sign in control.',
       connecting: 'Adzviser is connecting. If a browser sign-in opens, complete it and return to this conversation.',
       awaiting_sign_in: 'Complete the Adzviser sign-in in your browser, then return to this conversation. Your data tools will become available here after authorization finishes.',
       connected: 'Adzviser is connected. Discover its data tools and continue the original request.',
@@ -78,12 +88,20 @@ export async function startConnectionServer(sdkRoot, args) {
   }
 
   server.setRequestHandler(types.ListToolsRequestSchema, async (request, extra) => {
-    if (state !== 'connected') return { tools: [statusTool] };
+    if (state !== 'connected') return { tools: localTools };
     const result = await forward(request, extra, types.ListToolsResultSchema);
-    return { ...result, tools: [...(request.params?.cursor ? [] : [statusTool]), ...result.tools.filter((tool) => tool.name !== STATUS_TOOL)] };
+    return { ...result, tools: [...(request.params?.cursor ? [] : localTools), ...result.tools.filter((tool) => ![STATUS_TOOL, CONNECT_TOOL].includes(tool.name))] };
   });
   server.setRequestHandler(types.CallToolRequestSchema, async (request, extra) => {
     if (request.params.name === STATUS_TOOL) return statusResult();
+    if (request.params.name === CONNECT_TOOL) {
+      if (!started && !closing) {
+        started = true;
+        state = 'connecting';
+        void connectRemote();
+      }
+      return statusResult(state === 'failed');
+    }
     if (state !== 'connected') return statusResult(true);
     return forward(request, extra, types.CallToolResultSchema);
   });
@@ -136,16 +154,14 @@ export async function startConnectionServer(sdkRoot, args) {
   }
   server.oninitialized = () => {
     initialized = true;
-    if (!started) {
-      started = true;
-      void connectRemote();
-    }
   };
   server.onclose = shutdown;
   process.stdin.once('end', shutdown);
   process.once('SIGINT', shutdown);
   process.once('SIGTERM', shutdown);
   process.stdout.on('error', shutdown);
-  // Acknowledge the host and expose status before beginning any network/OAuth work.
+  // Hosts start every bundled server, including in Cowork. Loading this local
+  // server must not start a second OAuth flow beside the remote connection.
+  // Only the explicit local connect tool starts network/authorization work.
   await server.connect(new StdioServerTransport());
 }

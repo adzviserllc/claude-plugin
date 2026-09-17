@@ -2,7 +2,7 @@
 
 This document contains listing copy and the remaining publication steps. A GitHub repository and its own marketplace do not by themselves constitute an Anthropic directory listing.
 
-The repository contains **Adzviser 1.2.0**, a Cowork connection preview with a bundled remote HTTP route and the existing local Code route. Cowork installation, remote-connection provisioning, authorization, and reporting are not yet verified in the actual app. Linux Desktop Code testing confirmed plugin workspace access, Google Ads reporting, and access in a new conversation. Automated tests cover a 40-second first sign-in in the same session. A manual delayed first sign-in and comparison against source-platform reports remain outstanding; see the [release checks](docs/testing.md) before submission.
+The repository contains **Adzviser 1.2.1**, a Cowork connection preview with a bundled remote HTTP route and the existing local Code route. Cowork 1.2.0 installation and a remote Connected state were observed, along with an unwanted local sign-in. Version 1.2.1 defers local OAuth until requested; its corrected startup behavior, live Cowork reporting, and remote sign-in reuse still need app acceptance. Linux Desktop Code testing confirmed plugin workspace access, Google Ads reporting, and access in a new conversation. Automated tests cover a 40-second first sign-in in the same session. A manual delayed first sign-in and comparison against source-platform reports remain outstanding; see the [release checks](docs/testing.md) before submission.
 
 ## Submission values
 
@@ -13,7 +13,7 @@ The repository contains **Adzviser 1.2.0**, a Cowork connection preview with a b
 | Plugin ID | `adzviser` |
 | Suggested display name | Adzviser |
 | Publisher | Adzviser |
-| Version | `1.2.0` |
+| Version | `1.2.1` |
 | Categories, if requested | Marketing; Data & Analytics |
 | Website | `https://adzviser.com` |
 | Documentation | `https://github.com/adzviserllc/claude-plugin#readme` |
@@ -49,7 +49,7 @@ The plugin bundles a remote HTTP connection managed by Claude and a local Node.j
 For the Cowork preview, first complete the [Cowork acceptance checklist](docs/testing.md#cowork-acceptance). Record whether installation provisions the remote connection, which sign-in controls Claude presents, and a real workspace/report result. Do not submit the preview as verified Cowork support until those checks pass. The following steps cover the existing local Code route.
 
 1. Install from this public repository or the release ZIP.
-2. Use a local Code session with Node.js 22.12+ and npm available. Keep the Adzviser directory connector disabled, approve the plugin's local server, and complete its browser sign-in. Ask for actual workspaces and verify the tool originates from `plugin:adzviser:analytics`. Repeat in a new conversation to check saved-login reuse.
+2. Use a local Code session with Node.js 22.12+ and npm available. Keep the Adzviser directory connector disabled, approve the plugin's local server, and ask the setup skill for workspaces. It should start the local connection and reuse saved authorization or request browser sign-in. Confirm that the workspace tool originates from `plugin:adzviser:analytics`. Repeat in a new conversation to check saved-login reuse.
 3. Use a designated Adzviser review account with a reporting workspace connected to the sources being tested. Account setup starts at `https://adzviser.com/set-up`. If Anthropic requests provisioned access, supply it through their private reviewer-access mechanism, never in this public repository.
 4. Select the Adzviser setup skill, verify real workspaces, then test representative prompts:
    - “How much did Google Ads spend last month?”

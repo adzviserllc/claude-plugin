@@ -1,5 +1,13 @@
 # Release notes
 
+## 1.2.1 — 2026-09-16
+
+Fix the extra local browser sign-in when opening Cowork after authorizing the remote Adzviser connection. The local `analytics` server now starts idle; loading it, listing tools, or checking status does not start OAuth. The `adzviser_connect` tool starts local access on demand, and repeated calls do not launch additional helpers.
+
+The setup guidance uses the remote connection in Cowork and starts the local connection only for local Claude Code. Saved local credentials, remote configuration, and the OAuth client are unchanged. Local Code sessions initially expose status and connect tools; setup starts the connection and the data tools appear in the same session.
+
+Cowork 1.2.0 installation and a remote Connected state were observed, alongside the duplicate local sign-in. The new startup behavior, live reports, and authorization reuse still need actual Cowork acceptance. This change does not resolve callback-port contention between independently authorized local helpers.
+
 ## 1.2.0 — 2026-09-16
 
 Cowork connection preview: the single Adzviser plugin now includes a standard remote HTTP connection (`cloud`) to the existing Adzviser MCP service, alongside the working local Claude Code connection (`analytics`). No backend deployment is needed.

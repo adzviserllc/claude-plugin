@@ -1,6 +1,6 @@
-# Release checks — Adzviser 1.2.0
+# Release checks — Adzviser 1.2.1
 
-Version 1.2.0 adds a remote HTTP route (`cloud`) alongside the existing local route (`analytics`). The local runtime and saved-login location are unchanged. Actual Cowork provisioning and authorization are pending acceptance; synthetic remote tests do not establish app compatibility. The checks below describe the full acceptance process; the evidence paragraph records which interactive checks have actually been completed.
+Version 1.2.1 starts local OAuth only when `adzviser_connect` is called. Loading the plugin, discovering its tools, and reading local status must leave the helper idle. The remote HTTP route and saved-login location are unchanged. Cowork 1.2.0 was installed and its remote connector reached Connected, but also opened an unwanted local sign-in. Live reporting, authorization reuse, and the corrected startup behavior remain pending actual Cowork acceptance; synthetic tests do not establish app compatibility. The checks below describe the full acceptance process; the evidence paragraph records which interactive checks have actually been completed.
 
 ## Structure and installation
 
@@ -10,12 +10,12 @@ Add the marketplace in an isolated Claude configuration. Verify that it offers e
 
 ## Cowork acceptance
 
-Use the single Adzviser 1.2.0 plugin from the GitHub marketplace. Do not add a second plugin, type a custom MCP URL, copy Code credentials, or change local configuration files for this test.
+Use the single Adzviser 1.2.1 plugin from the GitHub marketplace. Do not add a second plugin, type a custom MCP URL, copy Code credentials, or change local configuration files for this test.
 
 1. Record which Adzviser remote connections exist and whether they are authorized before installing/updating. The intended first-run test begins without remote Adzviser authorization; do not disconnect a production account just for a test.
-2. Install/update the plugin in Cowork and confirm 1.2.0. Open its connection setup. Record whether the `cloud` URL provisions a connection, matches the existing Adzviser directory entry, or produces an unsupported/local-server error. A declared connector count alone is not a pass.
+2. Install/update the plugin in Cowork and confirm 1.2.1. Open its connection setup. Record whether the `cloud` URL provisions a connection, matches the existing Adzviser directory entry, or produces an unsupported/local-server error. A declared connector count alone is not a pass.
 3. Complete the remote connection's supported **Connect / Sign in** action. If the plugin sends the user to **Customize → Connectors → Adzviser**, record that route and whether it enables/reuses a directory entry. Do not claim the remote identity is independent of that entry.
-4. In a new Cowork conversation, select the Adzviser setup skill and send **“Use Adzviser to list my actual workspaces and their connected data sources.”** Require an actual successful `list_workspace` tool call and compare to the test account. Do not accept remembered accounts, a mock report, or an artifact as proof.
+4. In a new Cowork conversation, select the Adzviser setup skill and send **“Use Adzviser to list my actual workspaces and their connected data sources.”** Verify that no local browser sign-in opens and that `adzviser_connect` is not called. Require an actual successful `list_workspace` tool call and compare to the test account. Do not accept remembered accounts, a mock report, or an artifact as proof.
 5. Ask **“For [verified workspace], show Google Ads spend, clicks, and conversions for the last seven complete days. State the exact dates, currency, and missing coverage.”** Use a connected source that exists. Verify tool calls and totals against the source platform.
 6. Start another Cowork conversation and repeat the workspace request without signing in again. Fully quit/reopen Desktop and repeat. Record both outcomes separately.
 7. Recheck the working local Code route without modifying or copying its credentials. The new remote route may show `needs-auth` there; the local `analytics` tools must still work.
@@ -26,7 +26,7 @@ Record any extra local-server prompt, browser sign-in, manual connector installa
 
 Use a designated test account. Keep the directory connector disabled, remove the old `adzviser-desktop` test plugin, and use a new local Code conversation.
 
-1. Install Adzviser and complete its own browser sign-in, deliberately taking over 30 seconds. The connection-status tool should be available while waiting, and data tools should appear in the same conversation after sign-in. Record the number of approval and sign-in steps.
+1. Install Adzviser and confirm that merely starting a session does not open browser sign-in. Ask the setup skill for your workspaces; it should call `adzviser_connect` once. Complete any requested browser sign-in, deliberately taking over 30 seconds. The connection-status tool should be available while waiting, and data tools should appear in the same conversation after sign-in. Record the number of approval and sign-in steps.
 2. Ask for workspaces and connected sources. Verify an actual tool call from `plugin:adzviser:analytics` and compare the result to the account.
 3. Start another conversation in the same project and repeat without a new sign-in. Restart Desktop and repeat once more.
 4. Ask for a small report and compare dates, metric definitions, and totals to the source platform.
@@ -47,6 +47,8 @@ Use synthetic fixtures for edge cases or a designated test account. Do not publi
 | Cowork has a usable remote Adzviser tool with a host-assigned prefix. | Uses the tool after checking its Adzviser origin; does not demand an exact plugin prefix or the local status tool. |
 | Cowork has the setup skill but no remote connection was provisioned. | Reports the provisioning gap and requests the visible status; no `/mcp`, Node installation, repeated reinstalls, or artifact workaround. |
 | Cowork's bundled connection opens the existing Adzviser connector for sign-in. | Explains host-managed authorization; does not promise the directory entry stays disabled or demand a second plugin installation. |
+| Cowork remote Adzviser is connected; local `analytics` is idle. | Uses remote data tools without calling `adzviser_connect` or opening another browser sign-in. |
+| Local Code exposes only status and connect tools. | Calls `adzviser_connect` once as part of setup, reuses saved authorization when available, then discovers data tools. |
 | Local `analytics` is connected; `cloud` needs authentication. | Completes the requested task through `analytics` without requesting another sign-in. |
 | Both routes expose workspaces from different accounts. | Uses one consistently and asks which account when results conflict; never merges accounts silently. |
 | “How much did my Meta ads spend last month?” | Connected `fb_ads_request`; real workspace and discovered fields; previous calendar month; no public-library search. |

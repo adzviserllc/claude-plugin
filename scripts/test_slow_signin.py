@@ -11,6 +11,7 @@ import queue
 import shutil
 import signal
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -35,6 +36,42 @@ def main():
         config = json.loads((ROOT / '.mcp.json').read_text())
         server = config['mcpServers']['analytics']
         server['args'] = [a.replace('https://mcp.adzviser.com/http', f'http://127.0.0.1:{fixture.server_port}/mcp') for a in server['args']]
+        # A test-only MCP relay requests local access explicitly, without a model
+        # call. The real Claude engine still performs initialization, discovers
+        # pending tools, and handles list_changed after the 40-second OAuth delay.
+        command_file = root / 'local-command.json'
+        command_file.write_text(json.dumps([server['command'], *[a.replace('${CLAUDE_PLUGIN_ROOT}', str(plugin)) for a in server['args']]]))
+        relay = root / 'request-local-connection.py'
+        relay.write_text('''import json,subprocess,sys,threading,time
+command=json.load(open(sys.argv[1]))
+child=subprocess.Popen(command,stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
+lock=threading.Lock()
+request_id='fixture-explicit-local-connect'
+def send(line):
+ with lock:
+  child.stdin.write(line);child.stdin.flush()
+def connect():
+ time.sleep(2)
+ send(json.dumps({'jsonrpc':'2.0','id':request_id,'method':'tools/call','params':{'name':'adzviser_connect','arguments':{}}})+'\\n')
+def output():
+ for line in child.stdout:
+  message=json.loads(line)
+  if message.get('id')==request_id:
+   assert 'error' not in message,message
+   continue
+  sys.stdout.write(line);sys.stdout.flush()
+threading.Thread(target=output,daemon=True).start()
+try:
+ for line in sys.stdin:
+  send(line)
+  if json.loads(line).get('method')=='notifications/initialized':
+   threading.Thread(target=connect,daemon=True).start()
+finally:
+ child.stdin.close()
+ child.wait(timeout=8)
+''')
+        server['command'] = sys.executable
+        server['args'] = [str(relay), str(command_file)]
         config['mcpServers']['cloud']['url'] = f'http://127.0.0.1:{fixture.server_port}/mcp'
         (plugin / '.mcp.json').write_text(json.dumps(config))
         config_dir = root / 'config'
@@ -120,6 +157,7 @@ with urlopen(url,timeout=10) as response:
                         connected_at = elapsed
                         assert connected_at < 10, 'Host startup still waits for browser authorization'
                         assert any('adzviser_connection_status' in name for name in names), names
+                        assert any('adzviser_connect' in name for name in names), names
                         if label == 'first':
                             assert Fixture.authorizations == 0, 'The slow login should still be pending'
                         print(f'{label}: {item["name"]} ready at {connected_at:.1f}s', flush=True)
@@ -163,7 +201,7 @@ with urlopen(url,timeout=10) as response:
                 failures = json.loads(cache.read_text())
                 assert 'plugin:adzviser:analytics' not in failures
                 assert 'plugin:adzviser:adzviser' not in failures
-            print('PASS: 40-second sign-in does not time out startup; tools appear without restarting; saved login survives connection renaming and the next session.', flush=True)
+            print('PASS: explicit local connection with a 40-second sign-in does not time out startup; tools appear without restarting; saved login survives connection renaming and the next session.', flush=True)
         finally:
             for process in processes:
                 stop(process)
