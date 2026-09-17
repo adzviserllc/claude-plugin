@@ -248,7 +248,7 @@ def main():
                     if session == 0:
                         bridge.authorize = False
                         tools = bridge.request(2, 'tools/list')['tools']
-                        assert [t['name'] for t in tools] == ['adzviser_connection_status', 'adzviser_connect']
+                        assert [t['name'] for t in tools] == ['adzviser_connection_status', 'adzviser_connect', 'adzviser_sign_in']
                         pending = bridge.request(3, 'tools/call', {'name': 'list_workspace', 'arguments': {}})
                         assert pending['isError'] and Fixture.calls == 0
                         assert bridge.request(4, 'resources/list') == {'resources': []}
@@ -307,7 +307,7 @@ def main():
                     time.sleep(.1)
                 assert 'awaiting_sign_in' in states and states[-1] == 'failed', states
                 assert bridge.request(3, 'ping') == {}
-                assert [t['name'] for t in bridge.request(4, 'tools/list')['tools']] == ['adzviser_connection_status', 'adzviser_connect']
+                assert [t['name'] for t in bridge.request(4, 'tools/list')['tools']] == ['adzviser_connection_status', 'adzviser_connect', 'adzviser_sign_in']
                 failed_call = bridge.request(5, 'tools/call', {'name': 'list_workspace', 'arguments': {}})
                 assert failed_call['isError'] and Fixture.calls == 3
                 assert not any('/authorize?' in line or 'synthetic-access' in line for line in bridge.stderr)

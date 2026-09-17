@@ -1,6 +1,12 @@
 # Adzviser connection test evidence — 2026-09-16
 
-**Adzviser 1.2.1** is a Cowork connection preview. One plugin bundles the existing `analytics` local helper and a standard `cloud` HTTP connection to `https://mcp.adzviser.com/http`. Claude controls remote authorization and URL-to-directory matching. Cowork 1.2.0 provisioned the remote Adzviser connection and showed Connected, but still launched local OAuth. Corrected startup behavior and authenticated reports remain unverified until the [Cowork acceptance checklist](testing.md#cowork-acceptance) passes.
+**Adzviser 1.3.0** adds conversation sign-in through the plugin helper and a hosted OAuth return page. The matching backend must be deployed first. [Design and rollout](conversation-signin.md) records its scope; real Cowork acceptance is still pending.
+
+## Conversation sign-in evidence (1.3.0)
+
+The plugin and actual new backend router passed a loopback integration with synthetic OAuth: a link in the tool result, hosted callback, S256 PKCE exchange, workspace tools in the same session, saved authorization on restart, and serialized refresh across two helpers. Denial, expiry and shutdown leave no usable data tools or locked cache. Credentials are absent from tool responses and helper logs. Backend tests reject forged, cross-client and expired callbacks, unauthorized polling and mailbox replacement.
+
+A recorded 1.2.1 Cowork session made a successful live workspace call through the connected Claude-managed Adzviser connector. After that connector was disconnected, native `authenticate` returned a localhost URL and the browser could not reach its callback. This motivated the hosted helper flow; it does not verify 1.3.0 in Cowork. Report retrieval, actual host data-store persistence, and automatic routing through the new tool still need acceptance testing.
 
 ## Current Cowork finding
 

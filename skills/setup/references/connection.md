@@ -1,9 +1,9 @@
 # Connect to Adzviser
 
-The **Adzviser** plugin bundles two routes to the same reporting service. Use the route available in this session; the user does not need to authenticate both.
+The **Adzviser** plugin offers a Claude-managed remote connection and a plugin helper. Use an already working data connection first; the user does not need to authenticate every route.
 
-- **Remote connection (`cloud`):** standard HTTP MCP at `https://mcp.adzviser.com/http`. Claude manages its OAuth sign-in. This is the route for Cowork and other hosts that cannot start local processes. Claude may display the connection as **Adzviser**, match it to the existing directory entry, or assign its own tool prefix. Its local helper and `adzviser_connection_status` tool are not required for remote access.
-- **Local connection (`analytics`):** the Claude Code helper, with its own browser sign-in and saved authorization. It starts idle; `adzviser_connect` starts its connection only when local Code needs it. Loading the plugin or reading status does not open a browser. It runs only where the host permits local Node.js processes. The remote route does not migrate or clear this saved login.
+- **Plugin helper (`analytics`):** exposes `adzviser_sign_in` for a sign-in link in the conversation. It receives authorization through an Adzviser-hosted return page, without localhost or pasting codes. This works only where Claude runs the bundled Node.js helper; a plugin installation alone does not prove that capability. The existing `adzviser_connect` tool retains the local Code browser login and its saved credentials.
+- **Claude-managed remote connection (`cloud`):** standard HTTP MCP at `https://mcp.adzviser.com/http`. Claude owns its authorization. It may display this as Adzviser or match the directory entry. Hosts without the helper use their own supported sign-in action. The plugin cannot replace that host's callback handling or promise universal web/Chat support.
 
 ## Check access and continue
 
@@ -17,15 +17,23 @@ The **Adzviser** plugin bundles two routes to the same reporting service. Use th
 
 An available skill proves the workflow loaded, not that the connection succeeded. Missing tools do not establish an expired credential, a dropped connection, or a service outage.
 
-### Cowork or another remote host
+### Sign in from the conversation
 
-If Claude provides a connection or authorization action for Adzviser, use that supported action. Otherwise guide the user to the Adzviser plugin's connection setup and complete **Connect / Sign in** for its remote Adzviser connection. Labels vary by host. If Claude sends them to **Customize → Connectors → Adzviser**, explain that Claude manages the plugin's remote authorization there. Do not make them search the directory for another plugin or promise that a URL-matched directory entry stays disconnected.
+If working Adzviser data tools are absent, search for **adzviser_sign_in** from this plugin. In Cowork, prefer that tool when it is available. Call it once. It reuses its saved authorization or returns `authorization_url` for a new sign-in.
 
-Cowork may also load the local `analytics` server. Its presence, `idle` status, or “Runs in each session” label does not mean another sign-in is needed. Do not call `adzviser_connect` or use the local status as the remote connection's status in Cowork. If the remote connection is already authorized, discover its data tools and use them; if none appear, report the remote tool-discovery gap rather than starting local OAuth.
+- **`connected`:** rediscover data tools, call `list_workspace` and continue the pending request.
+- **`awaiting_sign_in` with `authorization_url`:** show the exact returned URL as a short **[Connect Adzviser](returned URL)** link. Say “Sign in, then return here and I’ll continue.” Do not paste the raw long URL, construct a URL, automatically open a second browser, or send the user to connector settings first. The helper receives completion without asking for codes or callback URLs.
+- **`connecting`:** a saved connection or link is being prepared. Check `adzviser_connection_status` once after a brief wait; it also returns the pending link when ready. Do not claim a browser has opened or that sign-in completed.
+- After the user returns, read status once and rediscover tools. Resume the original request in this conversation. If data tools are still unavailable, report the actual state. A hosted “Sign-in received” page alone does not establish access.
+- **`failed`:** offer one fresh attempt with `adzviser_sign_in`. Expired or abandoned links cannot be reused. If it fails again, report the non-secret error and use the host's supported connection controls as recovery. Do not switch accounts or repeat sign-ins indefinitely.
 
-After sign-in, rediscover the data tools once and resume the pending request. A successful `list_workspace` call establishes access. Remote access does not need Node.js, npm, a localhost page, or the local status tool. Do not send a Cowork user to `/mcp` unless that host actually offers it.
+The helper starts idle and never opens a browser merely because the plugin or its tools loaded. Do not call either sign-in tool when an existing Adzviser connection already serves the request. Do not disconnect a working Claude-managed connector to test this flow. The helper's saved conversation authorization is separate from the connector and from the legacy local login; it does not copy either one's credentials.
 
-If installing or updating the plugin did not provision a remote connection, report that specific gap and request the visible plugin connection status for support. Do not claim it is connected because its manifest lists a server. Do not loop through reinstalls, invent a login link, create an artifact to bypass missing tools, or report workspaces from memory as current data.
+### Hosts without the conversation sign-in tool
+
+If `adzviser_sign_in` is unavailable, use Claude's supported remote authorization action when offered, and show its provided link. Do not invent an action or a URL. Some Cowork hosts return a localhost callback that the browser cannot reach. Our helper's hosted return page does not change that native flow. If that happens, explain the host callback limitation and use the plugin's **Connectors → Adzviser → Connect** action as recovery. Do not request callback URLs in the conversation or invoke the old local `adzviser_connect` as a Cowork workaround.
+
+If no remote connection was provisioned either, report that specific gap and request the visible plugin connection status. Do not request Node installation in remote-only hosts, loop through reinstalls, create an artifact to bypass missing tools, or report workspaces from memory as current data.
 
 ### Local Claude Code
 

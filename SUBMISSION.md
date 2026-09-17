@@ -2,7 +2,7 @@
 
 This document contains listing copy and the remaining publication steps. A GitHub repository and its own marketplace do not by themselves constitute an Anthropic directory listing.
 
-The repository contains **Adzviser 1.2.1**, a Cowork connection preview with a bundled remote HTTP route and the existing local Code route. Cowork 1.2.0 installation and a remote Connected state were observed, along with an unwanted local sign-in. Version 1.2.1 defers local OAuth until requested; its corrected startup behavior, live Cowork reporting, and remote sign-in reuse still need app acceptance. Linux Desktop Code testing confirmed plugin workspace access, Google Ads reporting, and access in a new conversation. Automated tests cover a 40-second first sign-in in the same session. A manual delayed first sign-in and comparison against source-platform reports remain outstanding; see the [release checks](docs/testing.md) before submission.
+**Adzviser 1.3.0** is a conversation sign-in preview. The hosted callback service is deployed and enabled. Automated plugin/backend integration and deployment checks passed; actual Cowork sign-in, persistence and reporting remain required before submission as supported. Existing Linux local Code workspace/reporting evidence is preserved in the [release checks](docs/testing.md).
 
 ## Submission values
 
@@ -13,7 +13,7 @@ The repository contains **Adzviser 1.2.1**, a Cowork connection preview with a b
 | Plugin ID | `adzviser` |
 | Suggested display name | Adzviser |
 | Publisher | Adzviser |
-| Version | `1.2.1` |
+| Version | `1.3.0` (conversation sign-in preview) |
 | Categories, if requested | Marketing; Data & Analytics |
 | Website | `https://adzviser.com` |
 | Documentation | `https://github.com/adzviserllc/claude-plugin#readme` |

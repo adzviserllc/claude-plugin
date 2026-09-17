@@ -1,7 +1,7 @@
 {
   "name": "adzviser",
-  "version": "1.2.1",
-  "description": "Analyze marketing, analytics, ecommerce, and CRM data with Adzviser. Eight workflows with a remote connection for Cowork testing and the verified local Claude Code connection.",
+  "version": "1.3.0",
+  "description": "Marketing analytics and reporting with Adzviser. Eight workflows, conversation sign-in for hosts running the plugin helper, and a standard remote MCP connection.",
   "author": {
     "name": "Adzviser",
     "email": "zeyuan.gu@adzviser.com",
