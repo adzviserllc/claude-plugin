@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.1.1 — 2026-09-16
+
+The browser sign-in confirmation now says **Return to your conversation** and directs you back to where you started sign-in. Both success and error messages use the same wording across apps and terminal sessions instead of naming Claude Desktop.
+
+This update changes callback copy only. Authentication, saved-login storage, skills, and supported environments are unchanged. Refresh the marketplace, update Adzviser, and restart the host to load it. No backend deployment is needed.
+
 ## 1.1.0 — 2026-09-16
 
 Adzviser is now one plugin with eight workflows, a marketing analyst agent, and its own browser sign-in for local Claude Code. The separate Adzviser directory connector is not required.

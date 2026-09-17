@@ -29,7 +29,7 @@ test('replaces only callback presentation, with private response headers and cle
   const html = await response.text();
   assert.equal(response.status, 200);
   assert.match(html, /Back to your insights\./);
-  assert.match(html, /Return to Claude Desktop/);
+  assert.match(html, /Return to your conversation/);
   assert.match(html, /history.replaceState\(null, '', location.pathname\)/);
   assert.doesNotMatch(html, /test-secret|test-state|return to the CLI/);
   assert.equal(Number(response.headers.get('content-length')), Buffer.byteLength(html));

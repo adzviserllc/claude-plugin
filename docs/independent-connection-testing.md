@@ -1,6 +1,6 @@
 # Adzviser connection test evidence — 2026-09-16
 
-**Adzviser 1.1.0** promotes the tested 1.1.0-rc.3 runtime and skills unchanged. It keeps one `adzviser` entry and one MCP server named `adzviser`, separating local MCP initialization from the browser authorization wait. The former `adzviser-desktop` package and `adzviser-independent` server names appear below only as historical test evidence. They are no longer distributed as another edition.
+**Adzviser 1.1.1** keeps the tested connection logic and skills from 1.1.0, with app-neutral callback copy. It keeps one `adzviser` entry and one MCP server named `adzviser`, separating local MCP initialization from the browser authorization wait. The former `adzviser-desktop` package and `adzviser-independent` server names appear below only as historical test evidence. They are no longer distributed as another edition.
 
 ## Evidence and limits
 
@@ -21,6 +21,6 @@ The motivation is a local Desktop log entry showing the original remote plugin s
 
 ## Current acceptance and development
 
-Follow the [single installation guide](../README.md) and [release checks](testing.md). Test with the directory connector disabled. The saved-login workspace and reporting workflows now have interactive evidence; a manual delayed first sign-in and source-platform reconciliation remain outstanding. The 1.1.0 promotion changes version metadata and documentation only.
+Follow the [single installation guide](../README.md) and [release checks](testing.md). Test with the directory connector disabled. The saved-login workspace and reporting workflows now have interactive evidence; a manual delayed first sign-in and source-platform reconciliation remain outstanding. The 1.1.1 update changes callback copy, version metadata, and documentation; it does not expand compatibility claims.
 
 Edit the root workflows and runtime directly. Run `node --test scripts/callback-page.test.cjs`, `python3 scripts/test_desktop_connection.py`, `python3 scripts/test_slow_signin.py --claude /path/to/claude`, and `python3 scripts/package_plugin.py`. The integration tests use synthetic credentials on loopback servers and never load developer credentials. No backend deployment is involved.

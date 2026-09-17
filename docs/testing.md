@@ -1,6 +1,6 @@
-# Release checks — Adzviser 1.1.0
+# Release checks — Adzviser 1.1.1
 
-Version 1.1.0 promotes the tested 1.1.0-rc.3 runtime and skills unchanged. The checks below describe the full acceptance process; the evidence paragraph records which interactive checks have actually been completed.
+Version 1.1.1 keeps the tested connection logic and skills from 1.1.0; only callback copy changes. The checks below describe the full acceptance process; the evidence paragraph records which interactive checks have actually been completed.
 
 ## Structure and installation
 

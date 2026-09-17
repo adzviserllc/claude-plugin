@@ -20,8 +20,8 @@ function renderPage(success, nonce) {
     EYEBROW: success ? 'Sign-in received' : 'Connection paused',
     TITLE: success ? 'Back to your insights.' : 'Let’s try that again.',
     DESCRIPTION: success
-      ? 'You can close this tab and return to your conversation in Claude Desktop.'
-      : 'Sign-in wasn’t completed. Return to Claude Desktop and reconnect Adzviser when you’re ready.',
+      ? 'You can close this tab and return to the conversation where you started sign-in.'
+      : 'Sign-in wasn’t completed. Return to your conversation and reconnect Adzviser when you’re ready.',
     NEXT_STEP: success ? 'Continue your conversation with Adzviser.' : 'Reconnect Adzviser to start a new sign-in.',
   };
   return template.replace(/\{\{([A-Z_]+)\}\}/g, (_, key) => {

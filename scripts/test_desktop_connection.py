@@ -162,7 +162,7 @@ class Bridge:
                     assert response.status == 200
                     html = response.read().decode()
                     assert 'Back to your insights.' in html
-                    assert 'Return to Claude Desktop' in html
+                    assert 'Return to your conversation' in html
                     assert 'return to the CLI' not in html
                     assert 'fixture-code' not in html
                     assert 'history.replaceState' in html
