@@ -1,5 +1,12 @@
 # Release notes
 
+## 1.3.0 — conversation sign-in preview
+
+- Adds a Connect Adzviser link through `adzviser_sign_in`, with an Adzviser-hosted OAuth callback and private completion delivery to the plugin helper.
+- Reuses saved authorization, serializes concurrent refresh, and handles denial, expiry, and shutdown without passing codes or tokens through chat.
+- Keeps the existing local Code login and working Claude-managed connectors. Hosts without the helper still use native remote authentication.
+- Requires the accompanying MCP server callback service to be deployed and enabled. Actual Cowork link completion and persistence still require acceptance testing.
+
 ## 1.2.1 — 2026-09-16
 
 Fix the extra local browser sign-in when opening Cowork after authorizing the remote Adzviser connection. The local `analytics` server now starts idle; loading it, listing tools, or checking status does not start OAuth. The `adzviser_connect` tool starts local access on demand, and repeated calls do not launch additional helpers.

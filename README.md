@@ -2,23 +2,23 @@
 
 Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. One plugin includes eight skills, a marketing analyst agent, and connections to your Adzviser data.
 
-**Version 1.2.1 — Cowork connection preview.** The local helper now waits for an explicit connection request instead of opening a second sign-in when Cowork starts. The plugin includes a remote HTTP connection and a local Claude Code connection. Cowork installation and the remote connector's Connected state have been observed; live Cowork reporting and sign-in reuse still require acceptance testing. See [test evidence](https://github.com/adzviserllc/claude-plugin/blob/main/docs/independent-connection-testing.md).
+**Version 1.3.0 — conversation sign-in preview.** Ask for your data, click **Connect Adzviser** in the conversation, sign in, then return to the same conversation. The plugin helper receives completion through Adzviser and exposes data tools without a localhost callback or copying codes. Saved authorization is reused in later sessions.
 
-## Try it in Cowork
+**Rollout status:** implementation and synthetic integration tests are complete; the hosted callback service must be deployed and enabled before this release is offered for installation. Actual Cowork acceptance remains required. This build is being prepared on a development branch, not advertised as universally supported.
 
-1. Add or refresh the GitHub marketplace `https://github.com/adzviserllc/claude-plugin` in Claude's plugin controls. Install or update the single **Adzviser** plugin and confirm version **1.2.1**. Refresh controls vary by host; if GitHub automatic sync is unavailable, use the marketplace's manual refresh/update option.
-2. Open the plugin's connection setup and complete the **Connect / Sign in** action for its remote Adzviser connection. The configuration calls this route `cloud`; Claude may show **Adzviser** after matching its URL to a directory entry. If Claude opens **Customize → Connectors → Adzviser**, complete authorization there. You should not need to find and install another plugin or enter an MCP URL manually.
-3. In a new Cowork conversation, select the Adzviser setup skill or ask:
+## Try it in Cowork after rollout
 
-```text
-Use Adzviser to list my actual workspaces and their connected data sources.
-```
+1. Install/update Adzviser from this GitHub marketplace and enable it.
+2. In a new conversation ask:
 
-A live `list_workspace` result establishes access. A plugin toggle, a connection listed in its manifest, or workspace names recalled from memory do not. Then try a small report and repeat the workspace request in another conversation without signing in again. See the [Cowork acceptance checklist](https://github.com/adzviserllc/claude-plugin/blob/main/docs/testing.md#cowork-acceptance).
+   > Use Adzviser to list my actual workspaces and their connected data sources.
 
-Claude manages the remote connection and its authorization. It may reuse or enable the existing Adzviser directory entry for the same URL. The plugin cannot require that entry to remain disabled or guarantee separate remote credentials. The intended flow is one plugin installation followed by the connection step Claude presents. If no remote connection is provisioned, report that outcome; do not keep reinstalling.
+3. If sign-in is needed, click **Connect Adzviser** in Claude's response, complete authorization, then return and say **“Continue.”** The helper completes authorization automatically; Claude resumes the requested lookup after rediscovering the tools.
+4. Repeat in another conversation. A successful `list_workspace` call and no repeated sign-in establish the tested behavior.
 
-Remote access uses the existing public Adzviser service and needs no local Node.js installation. The exact Cowork UI and whether it provisions the bundled connection are still being tested. Chat, web, mobile, and remote Code compatibility must each be verified before advertising support.
+Use an already connected Adzviser connector if available. You do not need to disconnect it or authenticate every route. The conversation link requires a host that can run the plugin's Node.js helper, including the Cowork configuration under test. Remote-only hosts retain Claude's own HTTP connector flow; this release cannot repair their native localhost callbacks. Connector settings are a recovery option when the helper or hosted service is unavailable.
+
+See [sign-in design and rollout](docs/conversation-signin.md) and the [acceptance checklist](docs/testing.md#cowork-acceptance).
 
 ## Local Claude Code
 
@@ -41,9 +41,9 @@ After updating, restart Claude Code or fully quit and reopen Claude Desktop to l
 
 | What you see | Next step |
 | --- | --- |
-| Cowork has skills but no data tools | Complete the plugin's remote connection step. If no remote connection was provisioned, report that gap with the visible status. |
+| Cowork has skills but no data tools | Ask the setup skill to connect. It uses `adzviser_sign_in` when the helper is available and shows a conversation link. |
 | Cowork opens Customize → Connectors → Adzviser | This may be Claude's URL-matched connection for the plugin. Complete its supported sign-in action. |
-| Cowork has no local status tool or localhost browser page | Those belong to the local Code helper. Use the remote connection's status and authorization controls. |
+| Cowork has no `adzviser_sign_in` tool | This host is not running the helper. Use its native remote sign-in action; settings are a recovery option. |
 | Cowork shows Adzviser Connected and analytics Runs in each session | Use the remote Adzviser data tools. Leave the local connection idle; another local sign-in is not required. |
 | Version 1.2.0 opens a second browser sign-in in Cowork | Update to 1.2.1 and start a new session. The local helper no longer starts OAuth automatically. Keep the remote authorization. |
 | Local Code has only status and connection tools | Ask Adzviser for your workspaces; the setup skill calls `adzviser_connect` and reuses the saved login. |
@@ -82,11 +82,11 @@ The root `.mcp.json` contains two standard MCP entries pointing to the same serv
 | Route | Transport | Authorization | Intended use |
 | --- | --- | --- | --- |
 | `cloud` | HTTP to `https://mcp.adzviser.com/http` | Managed by Claude | Cowork and remote hosts; app acceptance pending |
-| `analytics` | Local stdio helper | Managed by the helper | Existing local Claude Code workflow |
+| `analytics` | Stdio helper | Managed by the helper | Hosted conversation sign-in where the helper runs; existing local Code login |
 
 The remote entry contains no API key, token, custom authorization header, or user environment variable. Claude handles OAuth discovery and authorization. Its connection labels and credential storage are host-controlled; plugin tool prefixes are not guaranteed across hosts. The plugin does not copy credentials between the routes. Remote sign-in may be required even if local Code already has a saved login.
 
-The local helper uses `@modelcontextprotocol/sdk@1.30.0` to initialize immediately and expose `adzviser_connection_status` and `adzviser_connect`. Startup, tool discovery, and status reads do not start OAuth. Calling the connection tool starts `mcp-remote@0.14.2` for OAuth with PKCE and remote reporting. npm downloads the packages on first use with installation scripts disabled. The top-level versions are pinned; their dependency ranges are resolved by npm. The local helper stores authorization under `${CLAUDE_PLUGIN_DATA}/auth`, with owner-only credential-file permissions on Unix. Its callback page has no external resources and clears authorization parameters from the address bar.
+The local helper uses `@modelcontextprotocol/sdk@1.30.0` to initialize immediately and expose `adzviser_connection_status`, `adzviser_connect`, and `adzviser_sign_in`. Startup, tool discovery, and status reads do not start OAuth. Calling `adzviser_connect` starts `mcp-remote@0.14.2` for the existing local OAuth flow. Calling `adzviser_sign_in` uses the SDK with the hosted callback service and `proper-lockfile@4.1.2` for shared cache coordination. npm downloads the packages on first use with installation scripts disabled. The top-level versions are pinned; their dependency ranges are resolved by npm. The local helper stores authorization under `${CLAUDE_PLUGIN_DATA}/auth`, with owner-only credential-file permissions on Unix. Its callback page has no external resources and clears authorization parameters from the address bar.
 
 Claude may show a local-server permission prompt because the package still includes that helper. The helper runs with the user's OS permissions; the plugin adds no filesystem-browsing MCP tool or installation hook. Skills may use Claude's file and calculation tools for requested analysis and exports. Organization restrictions apply to both connection routes.
 
@@ -102,6 +102,7 @@ claude plugin validate .claude-plugin/marketplace.json --strict
 claude plugin validate skills --strict
 claude plugin validate agents --strict
 node --test scripts/callback-page.test.cjs
+npx --yes --ignore-scripts --package=mcp-remote@0.14.2 --package=@modelcontextprotocol/sdk@1.30.0 --package=proper-lockfile@4.1.2 node scripts/conversation-signin.test.cjs
 python3 scripts/test_desktop_connection.py
 python3 scripts/test_remote_connection.py
 python3 scripts/test_slow_signin.py
