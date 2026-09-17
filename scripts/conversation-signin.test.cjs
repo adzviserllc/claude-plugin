@@ -21,7 +21,7 @@ async function main() {
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
-  const state = { registrations: 0, logins: 0, refreshes: 0, calls: 0, creates: 0, deny: false, breakPoll: false, revoked: false };
+  const state = { registrations: 0, logins: 0, refreshes: 0, calls: 0, creates: 0, deny: false, breakPoll: false, revoked: false, holdPoll: false };
   const clients = new Map(), codes = new Map(), mailboxes = new Map();
   const allSecrets = [];
   app.use(express.json());
@@ -76,6 +76,7 @@ async function main() {
     if (req.path === '/poll') {
       allSecrets.push((req.headers.authorization || '').replace(/^Bearer /, ''));
       if (state.breakPoll) return res.sendStatus(410);
+      if (state.holdPoll) return res.json({ status: 'pending' });
     }
     if (req.path === '/requests') state.creates++;
     next();
@@ -124,7 +125,9 @@ async function main() {
     transport.stderr.on('data', value => logs.push(value.toString()));
     await client.connect(transport); active.add(client);
     const call = async name => { const result = await client.callTool({ name, arguments: {} }); visible.push(JSON.stringify(result)); return result.structuredContent; };
-    return { client, call, changes: () => changed, close: async () => { await client.close(); active.delete(client); } };
+    return { client, call, changes: () => changed,
+      close: async () => { await client.close(); active.delete(client); },
+      crash: async () => { process.kill(transport.pid, 'SIGKILL'); await sleep(100); await client.close(); active.delete(client); } };
   }
   async function waitConnected(b) {
     for (let i = 0; i < 60; i++) { const result = await b.call('adzviser_connection_status'); if (result.state === 'connected') return; if (result.state === 'failed') throw Error('Connection failed'); await sleep(100); }
@@ -180,6 +183,85 @@ async function main() {
     b = await bridge(path.join(temp, 'cancelled')); await b.call('adzviser_sign_in'); await b.close();
     const cancelFiles = await readdir(path.join(temp, 'cancelled', 'conversation'));
     assert.ok(!cancelFiles.some(f => f.endsWith('.lock')), 'shutdown releases cache lock');
+
+    // Cowork may stop the helper after the link tool returns. The browser can
+    // finish while no helper is running; checking status must resume that flow.
+    const restartDirectory = path.join(temp, 'pending-restart');
+    b = await bridge(restartDirectory);
+    const pendingLink = await b.call('adzviser_sign_in');
+    const creations = state.creates, logins = state.logins;
+    await b.close();
+    const pendingFile = path.join(restartDirectory, 'conversation', digest(origin + '/mcp') + '.json');
+    const pendingCache = JSON.parse(await readFile(pendingFile, 'utf8'));
+    assert.ok(pendingCache.pending.verifier); assert.ok(pendingCache.pending.secret);
+    allSecrets.push(pendingCache.pending.verifier, pendingCache.pending.secret);
+    assert.equal((await stat(pendingFile)).mode & 0o777, 0o600);
+    assert.equal((await stat(path.dirname(pendingFile))).mode & 0o777, 0o700);
+    assert.ok(pendingCache.pending.until > Date.now() && pendingCache.pending.until <= Date.now() + 300000);
+    const completedPage = await fetch(pendingLink.authorization_url);
+    assert.equal(completedPage.status, 200);
+    b = await bridge(restartDirectory);
+    const resumedStatus = await b.call('adzviser_connection_status');
+    assert.equal(resumedStatus.state, 'connected',
+      'status after helper restart must finish the original sign-in');
+    assert.notEqual(resumedStatus.helper_instance, pendingLink.helper_instance);
+    assert.equal(state.creates, creations, 'restart must not create another mailbox');
+    assert.equal(state.logins, logins + 1, 'restart must not require another browser sign-in');
+    assert.equal((await b.client.callTool({ name: 'list_workspace', arguments: {} })).content[0].text, 'Fixture workspace');
+    assert.equal(JSON.parse(await readFile(pendingFile, 'utf8')).pending, undefined, 'completion removes temporary credentials');
+    await b.close();
+    b = await bridge(restartDirectory);
+    assert.equal((await b.call('adzviser_connection_status')).state, 'connected', 'completed authorization also survives restarts');
+    assert.equal(state.creates, creations);
+    await b.close();
+
+    for (const completeBeforeCrash of [false, true]) {
+      const directory = path.join(temp, 'crash-' + completeBeforeCrash);
+      b = await bridge(directory);
+      state.holdPoll = true;
+      const original = await b.call('adzviser_sign_in');
+      const initialCreates = state.creates;
+      if (completeBeforeCrash) assert.equal((await fetch(original.authorization_url)).status, 200);
+      await sleep(150); await b.crash();
+      state.holdPoll = false;
+      b = await bridge(directory);
+      if (!completeBeforeCrash) {
+        const resumed = await b.call('adzviser_connection_status');
+        assert.equal(resumed.state, 'awaiting_sign_in');
+        assert.equal(resumed.authorization_url, original.authorization_url, 'reuse original link before browser consent');
+        await fetch(original.authorization_url); await waitConnected(b);
+      } else await waitConnected(b);
+      assert.equal(state.creates, initialCreates, 'crash recovery must not create a fresh sign-in');
+      assert.equal((await b.client.callTool({ name: 'list_workspace', arguments: {} })).content[0].text, 'Fixture workspace');
+      await b.close();
+    }
+
+    const shared = path.join(temp, 'shared-pending');
+    const first = await bridge(shared), second = await bridge(shared);
+    const sharedLink = await first.call('adzviser_sign_in');
+    const sharedCreates = state.creates;
+    const sameLink = await second.call('adzviser_connection_status');
+    assert.equal(sameLink.authorization_url, sharedLink.authorization_url);
+    await fetch(sharedLink.authorization_url);
+    await Promise.all([waitConnected(first), waitConnected(second)]);
+    assert.equal(state.creates, sharedCreates);
+    await first.close(); await second.close();
+
+    const expiredDirectory = path.join(temp, 'expired-pending-restart');
+    b = await bridge(expiredDirectory);
+    const expires = await b.call('adzviser_sign_in'); await b.close();
+    const expiresFile = path.join(expiredDirectory, 'conversation', digest(origin + '/mcp') + '.json');
+    const expiredCache = JSON.parse(await readFile(expiresFile, 'utf8'));
+    expiredCache.pending.until = Date.now() - 1; await writeFile(expiresFile, JSON.stringify(expiredCache));
+    b = await bridge(expiredDirectory);
+    const beforeExpiryCheck = state.creates;
+    assert.equal((await b.call('adzviser_connection_status')).state, 'failed');
+    assert.equal(JSON.parse(await readFile(expiresFile, 'utf8')).pending, undefined);
+    assert.equal(state.creates, beforeExpiryCheck, 'status never starts new authorization after expiry');
+    const fresh = await b.call('adzviser_sign_in');
+    assert.equal(fresh.state, 'awaiting_sign_in'); assert.notEqual(fresh.authorization_url, expires.authorization_url);
+    await fetch(fresh.authorization_url); await waitConnected(b); await b.close();
+    console.log('PASS: pending sign-in survives clean shutdown and crashes before/after consent; status resumes tokens, concurrent helpers share one flow, expired attempts are removed');
     const output = visible.join('\n') + logs.join('\n');
     for (const value of [...allSecrets, 'fixture-access', 'fixture-refresh'].filter(Boolean)) assert.ok(!output.includes(value), 'Credentials must not enter tool results or logs');
     console.log('PASS: denial, expiry, cancellation, no secret leakage, no browser launch or localhost listener');

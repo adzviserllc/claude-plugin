@@ -2,7 +2,8 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createInterface } from 'node:readline';
 import { readFileSync } from 'node:fs';
-import { createConversationAuth } from './conversation-auth.mjs';
+import { randomUUID } from 'node:crypto';
+import { createConversationAuth, hasSavedConversationAuth } from './conversation-auth.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const version = JSON.parse(readFileSync(path.join(root, '../.claude-plugin/plugin.json'), 'utf8')).version;
@@ -12,7 +13,7 @@ const SIGN_IN_TOOL = 'adzviser_sign_in';
 const statusTool = {
   name: STATUS_TOOL,
   title: 'Adzviser connection status',
-  description: 'Read this plugin helper’s connection status without starting sign-in. If idle and no working Adzviser data tools exist, use adzviser_sign_in for a conversation link in Cowork, or adzviser_connect for the existing local Code login. After the user returns, check once, discover data tools and continue their request. This is not the status of a separate Claude-managed connector. Do not poll repeatedly.',
+  description: 'Check this plugin helper’s connection and resume any previously started conversation sign-in or saved conversation authorization after a helper restart. Never starts a new sign-in. If idle and no working data tools exist, use adzviser_sign_in for a conversation link in Cowork, or adzviser_connect for local Code. After the user returns, check once, discover data tools and continue. This is not the status of a separate Claude-managed connector. Do not poll repeatedly.',
   inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 };
@@ -61,6 +62,7 @@ export async function startConnectionServer(sdkRoot, args) {
   let started = false;
   let closing = false;
   let remoteCapabilities = {};
+  const instance = randomUUID();
 
   function status() {
     const messages = {
@@ -71,12 +73,12 @@ export async function startConnectionServer(sdkRoot, args) {
       failed: 'The Adzviser connection could not finish or has closed. Reconnect the Adzviser plugin server in Claude’s MCP controls and retry. Do not reinstall the plugin or enable the directory connector.',
     };
     if (route === 'conversation' && state === 'failed') return {
-      state, message: 'Conversation sign-in could not finish. Call adzviser_sign_in to get a fresh link. If that also fails, report the connection failure; do not repeat browser sign-ins or request callback URLs.',
+      state, message: 'Conversation sign-in could not finish. Call adzviser_sign_in once to resume a valid attempt or create a new link if it expired. If that also fails, report the connection failure; do not repeat browser sign-ins or request callback URLs.',
     };
     return { state, message: route === 'conversation' && state === 'awaiting_sign_in' ? 'Show authorization_url as a Connect Adzviser link. After signing in, return to this conversation; the helper receives completion automatically. Do not ask for a callback URL or code.' : messages[state], ...(state === 'awaiting_sign_in' && authorizationLink ? authorizationLink : {}) };
   }
   function statusResult(isError = false) {
-    const data = status();
+    const data = { ...status(), plugin_version: version, helper_instance: instance, connection_route: route };
     return { content: [{ type: 'text', text: JSON.stringify(data) }], structuredContent: data, isError };
   }
   async function announceTools() {
@@ -112,24 +114,18 @@ export async function startConnectionServer(sdkRoot, args) {
     return { ...result, tools: [...(request.params?.cursor ? [] : localTools), ...result.tools.filter((tool) => ![STATUS_TOOL, CONNECT_TOOL, SIGN_IN_TOOL].includes(tool.name))] };
   });
   server.setRequestHandler(types.CallToolRequestSchema, async (request, extra) => {
-    if (request.params.name === STATUS_TOOL) return statusResult();
-    if (request.params.name === SIGN_IN_TOOL) {
-      if ((!started || (route === 'conversation' && state === 'failed')) && !closing) {
-        started = true;
-        const previousTask = conversationTask;
-        route = 'conversation';
-        state = 'connecting';
-        authorizationLink = undefined;
-        await previousTask?.catch(() => {});
-        conversationController?.abort();
-        await conversationAuth?.close().catch(() => {});
-        await client.close().catch(() => {});
-        const waiting = new Promise(resolve => { ready = resolve; });
-        conversationTask = connectConversation();
-        let timeout;
-        await Promise.race([waiting, conversationTask, new Promise(resolve => { timeout = setTimeout(resolve, 8000); })]);
-        clearTimeout(timeout);
+    if (request.params.name === STATUS_TOOL) {
+      if (!started && !closing) {
+        try {
+          if (await hasSavedConversationAuth({ endpoint: args[0], directory: process.env.MCP_REMOTE_CONFIG_DIR })) {
+            await startConversation(false);
+          }
+        } catch { route = 'conversation'; await fail(); }
       }
+      return statusResult(state === 'failed');
+    }
+    if (request.params.name === SIGN_IN_TOOL) {
+      await startConversation(true);
       return statusResult(state === 'failed');
     }
     if (request.params.name === CONNECT_TOOL) {
@@ -169,7 +165,23 @@ export async function startConnectionServer(sdkRoot, args) {
   client.onclose = () => { if (state === 'connected' && !closing) return fail(); };
   client.onerror = () => {}; // Request failures are reported above without raw auth logs.
 
-  async function connectConversation() {
+  async function startConversation(allowNewSignIn) {
+    if ((started && !(allowNewSignIn && route === 'conversation' && state === 'failed')) || closing) return;
+    started = true;
+    const previousTask = conversationTask;
+    route = 'conversation'; state = 'connecting'; authorizationLink = undefined;
+    await previousTask?.catch(() => {});
+    conversationController?.abort();
+    await conversationAuth?.close().catch(() => {});
+    await client.close().catch(() => {});
+    const waiting = new Promise(resolve => { ready = resolve; });
+    conversationTask = connectConversation(allowNewSignIn);
+    let timeout;
+    await Promise.race([waiting, conversationTask, new Promise(resolve => { timeout = setTimeout(resolve, 8000); })]);
+    clearTimeout(timeout);
+  }
+
+  async function connectConversation(allowNewSignIn) {
     conversationController = new AbortController();
     const deadline = setTimeout(() => conversationController.abort(), connectionTimeout);
     try {
@@ -178,7 +190,7 @@ export async function startConnectionServer(sdkRoot, args) {
         signal: conversationController.signal, sdk, onNeedsSignIn: fail,
         onLink: value => { authorizationLink = value; state = 'awaiting_sign_in'; ready?.(); },
       });
-      await conversationAuth.connect(client);
+      await conversationAuth.connect(client, { allowNewSignIn });
       clearTimeout(deadline);
       if (closing) return;
       authorizationLink = undefined;
@@ -227,6 +239,6 @@ export async function startConnectionServer(sdkRoot, args) {
   process.stdout.on('error', shutdown);
   // Hosts start every bundled server, including in Cowork. Loading this local
   // server must not start a second OAuth flow beside the remote connection.
-  // Only an explicit connection tool starts network/authorization work.
+  // Connection tools start access; status may resume existing authorization.
   await server.connect(new StdioServerTransport());
 }

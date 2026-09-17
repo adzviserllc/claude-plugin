@@ -1,6 +1,6 @@
-# Release checks — Adzviser 1.3.0
+# Release checks — Adzviser 1.3.1
 
-Version 1.3.0 adds hosted conversation sign-in through `adzviser_sign_in`. Deployment of the matching server endpoints is required before installation. Automated integration uses synthetic credentials and has passed the actual new server router. A 1.2.1 Cowork session successfully called the connected Adzviser remote workspace tool; the separate native in-chat OAuth attempt failed at its localhost callback. That result does not establish the new 1.3.0 flow. Actual Cowork completion, persistence and reporting remain acceptance checks below.
+Version 1.3.1 fixes pending hosted sign-in being lost when the plugin helper restarts. A 1.3.0 Cowork attempt reached the hosted success page without gaining data access; stopping its helper before completion reproduces that failure in the integration suite. Version 1.3.1 resumes the original request and retrieves a workspace after clean shutdown or a crash, including consent while the helper is offline. Automated integration uses synthetic credentials and has passed the actual server router. The existing deployed endpoints are sufficient; no backend deployment is needed for this update. Actual Cowork completion, persistence and reporting remain acceptance checks below.
 
 The hosted endpoint passed deployment checks before publication: the completion page returned 200 with no-store/no-referrer headers, malformed mailbox creation returned 400, and a source-specific connector did not expose the route. Server regression checks passed 2,673 unit tests and 31 integration checks across feature-disabled and feature-enabled runs, including real Redis with simulated upstream OAuth responses. These checks do not replace actual Cowork acceptance.
 
@@ -12,18 +12,18 @@ Add the marketplace in an isolated Claude configuration. Verify that it offers e
 
 ## Cowork acceptance
 
-Use a dedicated test account and the single Adzviser 1.3.0 plugin after server rollout. Do not modify installed caches or move credentials.
+Use a dedicated test account and the single Adzviser 1.3.1 plugin after server rollout. Do not modify installed caches or move credentials.
 
-1. Confirm 1.3.0. With no previously connected Adzviser account in this test profile, start a Cowork conversation and ask **“Use Adzviser to list my actual workspaces and their connected data sources.”** No browser should open just from loading the plugin.
+1. Confirm 1.3.1. With no previously connected Adzviser account in this test profile, start a Cowork conversation and ask **“Use Adzviser to list my actual workspaces and their connected data sources.”** No browser should open just from loading the plugin.
 2. Verify the setup skill calls `adzviser_sign_in`, and Claude shows **Connect Adzviser** in the conversation. No visit to settings should be necessary. If the tool is absent, record that this host cannot use the new helper flow; do not call native OAuth a pass for this test.
 3. Click the link, complete consent, and verify the final page is on `https://mcp.adzviser.com/plugin-auth/done`, without an OAuth code in the displayed URL. Wait over 30 seconds before completing one test. Do not accept a localhost error page or a request to paste a callback URL.
 4. Return and say **“Continue.”** Require an actual successful `list_workspace` call from the plugin helper in the same conversation. Verify its account and source names. Then retrieve a small report and reconcile it to the source platform.
-5. Repeat the workspace request in a new conversation and after fully restarting Desktop. Neither should require another sign-in when the same plugin data store persists. Record if Cowork gives each task a separate store.
+5. Repeat the workspace request in a new conversation and after fully restarting Desktop. Neither should require another sign-in when the same plugin data store persists. Also test restarting while consent is pending: use the original unexpired link, complete consent, then check connection status and require a workspace result. Record if Cowork gives each task a separate store.
 6. Test denial, a five-minute expired link, and retry. One fresh link should recover, with no stale flow or repeated browser loop.
 7. With a working Claude-managed Adzviser connector already present, repeat the request. The skill must use that connection without calling either helper sign-in tool.
 8. Retest the existing local Code login; saved credentials and its local callback must remain unchanged.
 
-Record the number of clicks and approval prompts, loaded tool names, final non-secret status, real workspace/report calls, and whether sign-in persisted. Keep credentials and customer reports out of release artifacts. The model may need a user message to continue after browser consent; the plugin cannot promise an automatic new model turn.
+Record the number of clicks and approval prompts, loaded tool names, final non-secret status (including `plugin_version`, `helper_instance` and `connection_route`), real workspace/report calls, and whether sign-in persisted. An instance change proves a different helper responded; an idle state alone does not establish a restart. Keep credentials and customer reports out of release artifacts. The model may need a user message to continue after browser consent; the plugin cannot promise an automatic new model turn.
 
 ## Local Code acceptance
 
@@ -49,6 +49,8 @@ Use synthetic fixtures for edge cases or a designated test account. Do not publi
 | User disabled the Adzviser directory connector to test the plugin in local Code. | Uses the plugin-provided Adzviser connection and completes browser sign-in if needed; does not ask the user to enable the directory connector. |
 | Cowork has a usable remote Adzviser tool with a host-assigned prefix. | Uses the tool after checking its Adzviser origin; does not demand an exact plugin prefix or the local status tool. |
 | Cowork has no data tools, but `adzviser_sign_in` is available. | Calls it once and shows the returned authorization URL as Connect Adzviser; after sign-in resumes the original task. |
+| A helper restarts while hosted sign-in is pending, with its data directory preserved. | Status resumes the same unexpired request; completed consent yields workspace tools without a second link. |
+| A saved pending request has expired. | Status removes the expired record without creating a new request. An explicit sign-in retry supplies a fresh link. |
 | Cowork has neither the helper nor a provisioned remote connection. | Reports the provisioning gap; no Node installation, repeated reinstalls, or artifact workaround. |
 | Cowork's bundled connection opens the existing Adzviser connector for sign-in. | Explains host-managed authorization; does not promise the directory entry stays disabled or demand a second plugin installation. |
 | Cowork remote Adzviser is connected; local `analytics` is idle. | Uses remote data tools without calling `adzviser_connect` or opening another browser sign-in. |

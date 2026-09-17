@@ -1,6 +1,14 @@
 # Adzviser connection test evidence — 2026-09-16
 
-**Adzviser 1.3.0** adds conversation sign-in through the plugin helper and a hosted OAuth return page. The matching backend must be deployed first. [Design and rollout](conversation-signin.md) records its scope; real Cowork acceptance is still pending.
+**Adzviser 1.3.1** repairs pending conversation sign-in recovery after a helper restart. It uses the already deployed hosted OAuth return service. [Design and rollout](conversation-signin.md) records its scope; real Cowork acceptance is still pending.
+
+## Pending sign-in restart evidence (1.3.1)
+
+The user reached the 1.3.0 hosted Sign-in received page, but Cowork could not retrieve workspaces and reported an idle helper. That response alone does not prove a process restart. A synthetic regression reproduced a specific runtime defect: after the helper returns a link, stop it, complete browser consent while it is offline, start another helper with the same data directory, and check status. Version 1.3.0 returns `idle` because it saved no pending request. Version 1.3.1 returns `connected` and retrieves the workspace without another authorization link.
+
+The updated suite passes against the actual backend callback router with synthetic upstream OAuth. It covers clean shutdown, SIGKILL before and after consent, status reuse of saved tokens, simultaneous helpers sharing one request, expiration cleanup and explicit retry, private cache permissions, and no secrets in tool results or helper logs. The existing local Code OAuth/MCP integration also passes. No backend code or installed user credentials were changed for this fix.
+
+Actual Cowork must still confirm that its helper data directory persists across the observed restart and across new conversations. New status metadata includes the plugin version, helper instance and route so a subsequent failure can be distinguished from an outdated package or a different helper. Live reporting and source-platform reconciliation remain acceptance checks.
 
 ## Conversation sign-in evidence (1.3.0)
 

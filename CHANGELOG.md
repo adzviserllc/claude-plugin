@@ -1,5 +1,13 @@
 # Release notes
 
+## 1.3.1 — resume sign-in after helper restarts
+
+- Fixes a pending conversation sign-in being lost when the helper exits before completing authorization. Version 1.3.0 could show the hosted success page while the next helper returned `idle`; pending requests now survive restarts in the helper's private storage.
+- A connection-status check resumes the original request or saved authorization without starting another sign-in. Concurrent helpers share one pending request; expired and denied attempts are removed.
+- Adds non-secret plugin version, helper instance and connection route to status results. Setup guidance no longer infers a restart solely from an idle status.
+- Regression coverage includes clean shutdown, crashes before and after consent, concurrent helpers, expiry and the existing local Code login. Uses the already deployed callback service; no backend deployment is required.
+- Remains a conversation sign-in preview until actual Cowork workspace retrieval, reporting and persistence pass acceptance testing.
+
 ## 1.3.0 — conversation sign-in preview
 
 - Adds a Connect Adzviser link through `adzviser_sign_in`, with an Adzviser-hosted OAuth callback and private completion delivery to the plugin helper.
