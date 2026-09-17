@@ -4,9 +4,9 @@ Turn connected marketing data into performance reviews, pacing checks, SEO insig
 
 **Version 1.3.0 — conversation sign-in preview.** Ask for your data, click **Connect Adzviser** in the conversation, sign in, then return to the same conversation. The plugin helper receives completion through Adzviser and exposes data tools without a localhost callback or copying codes. Saved authorization is reused in later sessions.
 
-**Rollout status:** implementation and synthetic integration tests are complete; the hosted callback service must be deployed and enabled before this release is offered for installation. Actual Cowork acceptance remains required. This build is being prepared on a development branch, not advertised as universally supported.
+**Rollout status:** the hosted callback service is deployed and enabled, and automated integration and server regression checks passed. Version 1.3.0 is available as a conversation sign-in preview. Actual Cowork sign-in, persistence and reporting still require acceptance testing; this release does not establish support for every Claude surface.
 
-## Try it in Cowork after rollout
+## Try it in Cowork
 
 1. Install/update Adzviser from this GitHub marketplace and enable it.
 2. In a new conversation ask:

@@ -1,6 +1,8 @@
-# Release checks — Adzviser 1.2.1
+# Release checks — Adzviser 1.3.0
 
 Version 1.3.0 adds hosted conversation sign-in through `adzviser_sign_in`. Deployment of the matching server endpoints is required before installation. Automated integration uses synthetic credentials and has passed the actual new server router. A 1.2.1 Cowork session successfully called the connected Adzviser remote workspace tool; the separate native in-chat OAuth attempt failed at its localhost callback. That result does not establish the new 1.3.0 flow. Actual Cowork completion, persistence and reporting remain acceptance checks below.
+
+The hosted endpoint passed deployment checks before publication: the completion page returned 200 with no-store/no-referrer headers, malformed mailbox creation returned 400, and a source-specific connector did not expose the route. Server regression checks passed 2,673 unit tests and 31 integration checks across feature-disabled and feature-enabled runs, including real Redis with simulated upstream OAuth responses. These checks do not replace actual Cowork acceptance.
 
 ## Structure and installation
 
