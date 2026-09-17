@@ -35,6 +35,7 @@ def main():
         config = json.loads((ROOT / '.mcp.json').read_text())
         server = config['mcpServers']['analytics']
         server['args'] = [a.replace('https://mcp.adzviser.com/http', f'http://127.0.0.1:{fixture.server_port}/mcp') for a in server['args']]
+        config['mcpServers']['cloud']['url'] = f'http://127.0.0.1:{fixture.server_port}/mcp'
         (plugin / '.mcp.json').write_text(json.dumps(config))
         config_dir = root / 'config'
         config_dir.mkdir()
@@ -90,6 +91,7 @@ with urlopen(url,timeout=10) as response:
             start = time.monotonic()
             next_status = 0
             connected_at = None
+            cloud_status = None
             send('init', 'initialize')
             while time.monotonic() - start < limit:
                 if time.monotonic() > next_status:
@@ -103,7 +105,10 @@ with urlopen(url,timeout=10) as response:
                 response = result.get('response', {})
                 if response.get('request_id') != 'status':
                     continue
-                for item in response.get('response', {}).get('mcpServers', []):
+                servers = response.get('response', {}).get('mcpServers', [])
+                cloud_status = next((item.get('status') for item in servers
+                                     if item.get('name') == 'plugin:adzviser:cloud'), cloud_status)
+                for item in servers:
                     if item.get('name') != f'plugin:adzviser:{server_name}':
                         continue
                     elapsed = time.monotonic() - start
@@ -121,7 +126,9 @@ with urlopen(url,timeout=10) as response:
                     if any('list_workspace' in name for name in names):
                         if label == 'first':
                             assert elapsed > 40, 'Login did not exceed the host startup timeout'
+                        assert cloud_status == 'needs-auth', f'Remote route should wait for host sign-in, got {cloud_status}'
                         print(f'{label}: workspace tool available in the same session at {elapsed:.1f}s', flush=True)
+                        print(f'{label}: unauthenticated cloud route does not block the local connection', flush=True)
                         return process
             raise AssertionError('Data tools did not appear after authorization')
 
@@ -136,16 +143,21 @@ with urlopen(url,timeout=10) as response:
 
         try:
             first = session('first', 70)
+            initial_registrations = Fixture.registrations
+            assert 1 <= initial_registrations <= 2, 'Each route can register its own OAuth client'
             stop(first)
             # Keep the plugin identity and data directory while switching the
             # connection key. Both names must reuse the same authorization.
-            (plugin / '.mcp.json').write_text(json.dumps({'mcpServers': {'adzviser': server}}))
+            legacy_config = {'mcpServers': {'cloud': config['mcpServers']['cloud'], 'adzviser': server}}
+            (plugin / '.mcp.json').write_text(json.dumps(legacy_config))
             legacy = session('legacy-name', 20, server_name='adzviser')
             stop(legacy)
             (plugin / '.mcp.json').write_text(json.dumps(config))
             session('restart', 20)
             assert Fixture.authorizations == 1, 'Restart should reuse the saved login'
-            assert Fixture.registrations == 1, 'Restart should reuse its OAuth client'
+            assert Fixture.registrations == initial_registrations, 'Restart should reuse registered OAuth clients'
+            assert Fixture.registered_clients.count('Adzviser') == 1, 'Local helper should keep its OAuth client'
+            print(f'OAuth client registrations across both routes: {Fixture.registrations}; browser sign-ins: {Fixture.authorizations}', flush=True)
             cache = config_dir / 'mcp-needs-auth-cache.json'
             if cache.exists():
                 failures = json.loads(cache.read_text())

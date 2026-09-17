@@ -27,6 +27,7 @@ jobs:
         run: |
           node --test scripts/callback-page.test.cjs
           python3 scripts/test_desktop_connection.py
+          python3 scripts/test_remote_connection.py
           python3 scripts/test_slow_signin.py
       - name: Build and validate the distribution
         run: |

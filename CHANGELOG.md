@@ -1,5 +1,15 @@
 # Release notes
 
+## 1.2.0 — 2026-09-16
+
+Cowork connection preview: the single Adzviser plugin now includes a standard remote HTTP connection (`cloud`) to the existing Adzviser MCP service, alongside the working local Claude Code connection (`analytics`). No backend deployment is needed.
+
+Claude manages remote sign-in and may match the bundled URL to the existing Adzviser connector. A connection can therefore appear under Connectors even when installed through the plugin. Separate remote credentials or a disabled directory entry are not guaranteed. Only one usable route is needed; the local helper and its saved-login location are unchanged.
+
+The shared skill guidance now handles both routes, avoids requiring the local status tool in Cowork, and continues the user's task after sign-in. It does not substitute remembered workspace names or an artifact for missing data tools.
+
+This release is a candidate for actual Cowork acceptance. Remote OAuth/MCP integration is tested with synthetic credentials; it does not prove that Cowork provisions or authorizes the connection. Follow the Cowork checklist before claiming support or submitting an updated directory listing.
+
 ## 1.1.2 — 2026-09-16
 
 The Adzviser plugin's data connection is now named **analytics**, so Claude identifies it as **plugin:adzviser:analytics**. The plugin remains **Adzviser**, and its skill commands stay the same.

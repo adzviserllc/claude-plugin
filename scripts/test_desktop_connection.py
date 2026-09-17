@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class Fixture(BaseHTTPRequestHandler):
     registrations = 0
+    registered_clients = []
     authorizations = 0
     refreshes = 0
     challenge = None
@@ -76,7 +77,9 @@ class Fixture(BaseHTTPRequestHandler):
         raw = self.rfile.read(int(self.headers.get("Content-Length", "0")))
         if self.path == "/register":
             Fixture.registrations += 1
-            return self.reply(201, {**json.loads(raw), "client_id": "synthetic-client"})
+            metadata = json.loads(raw)
+            Fixture.registered_clients.append(metadata.get('client_name'))
+            return self.reply(201, {**metadata, "client_id": "synthetic-client"})
         if self.path == "/token":
             params = parse_qs(raw.decode())
             grant = params.get("grant_type", [""])[0]
