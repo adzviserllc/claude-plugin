@@ -2,7 +2,7 @@
 
 This document contains listing copy and the remaining publication steps. A GitHub repository and its own marketplace do not by themselves constitute an Anthropic directory listing.
 
-**Adzviser 1.3.0** is a conversation sign-in preview. The hosted callback service is deployed and enabled. Automated plugin/backend integration and deployment checks passed; actual Cowork sign-in, persistence and reporting remain required before submission as supported. Existing Linux local Code workspace/reporting evidence is preserved in the [release checks](docs/testing.md).
+**Adzviser 1.3.1** is a conversation sign-in preview. The hosted callback service is deployed and enabled. This update fixes pending sign-in recovery after helper restarts; automated plugin/backend integration covers shutdown, crashes and shared requests. Actual Cowork sign-in, persistence and reporting remain required before submission as supported. Existing Linux local Code workspace/reporting evidence is preserved in the [release checks](docs/testing.md).
 
 ## Submission values
 
@@ -13,7 +13,7 @@ This document contains listing copy and the remaining publication steps. A GitHu
 | Plugin ID | `adzviser` |
 | Suggested display name | Adzviser |
 | Publisher | Adzviser |
-| Version | `1.3.0` (conversation sign-in preview) |
+| Version | `1.3.1` (conversation sign-in preview) |
 | Categories, if requested | Marketing; Data & Analytics |
 | Website | `https://adzviser.com` |
 | Documentation | `https://github.com/adzviserllc/claude-plugin#readme` |

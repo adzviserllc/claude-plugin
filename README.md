@@ -2,9 +2,9 @@
 
 Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. One plugin includes eight skills, a marketing analyst agent, and connections to your Adzviser data.
 
-**Version 1.3.0 — conversation sign-in preview.** Ask for your data, click **Connect Adzviser** in the conversation, sign in, then return to the same conversation. The plugin helper receives completion through Adzviser and exposes data tools without a localhost callback or copying codes. Saved authorization is reused in later sessions.
+**Version 1.3.1 — conversation sign-in preview.** Ask for your data, click **Connect Adzviser** in the conversation, sign in, then return to the same conversation. The plugin helper receives completion through Adzviser and exposes data tools without a localhost callback or copying codes. Pending sign-ins and completed authorization survive helper restarts when the host preserves the plugin's data directory.
 
-**Rollout status:** the hosted callback service is deployed and enabled, and automated integration and server regression checks passed. Version 1.3.0 is available as a conversation sign-in preview. Actual Cowork sign-in, persistence and reporting still require acceptance testing; this release does not establish support for every Claude surface.
+**Rollout status:** the hosted callback service is deployed and enabled. A 1.3.0 Cowork test reached its success page without gaining data access. Version 1.3.1 fixes a reproduced loss of pending authorization on helper restart, with automated crash/restart coverage against that server's callback code. Actual Cowork sign-in, persistence and reporting still require acceptance testing; this release does not establish support for every Claude surface.
 
 ## Try it in Cowork
 
@@ -42,6 +42,7 @@ After updating, restart Claude Code or fully quit and reopen Claude Desktop to l
 | What you see | Next step |
 | --- | --- |
 | Cowork has skills but no data tools | Ask the setup skill to connect. It uses `adzviser_sign_in` when the helper is available and shows a conversation link. |
+| Version 1.3.0 shows Sign-in received, then returns to idle | Update to 1.3.1. Start one new sign-in; the old release did not save pending requests. Later helper restarts can resume the saved request through connection status. |
 | Cowork opens Customize → Connectors → Adzviser | This may be Claude's URL-matched connection for the plugin. Complete its supported sign-in action. |
 | Cowork has no `adzviser_sign_in` tool | This host is not running the helper. Use its native remote sign-in action; settings are a recovery option. |
 | Cowork shows Adzviser Connected and analytics Runs in each session | Use the remote Adzviser data tools. Leave the local connection idle; another local sign-in is not required. |
@@ -86,7 +87,7 @@ The root `.mcp.json` contains two standard MCP entries pointing to the same serv
 
 The remote entry contains no API key, token, custom authorization header, or user environment variable. Claude handles OAuth discovery and authorization. Its connection labels and credential storage are host-controlled; plugin tool prefixes are not guaranteed across hosts. The plugin does not copy credentials between the routes. Remote sign-in may be required even if local Code already has a saved login.
 
-The local helper uses `@modelcontextprotocol/sdk@1.30.0` to initialize immediately and expose `adzviser_connection_status`, `adzviser_connect`, and `adzviser_sign_in`. Startup, tool discovery, and status reads do not start OAuth. Calling `adzviser_connect` starts `mcp-remote@0.14.2` for the existing local OAuth flow. Calling `adzviser_sign_in` uses the SDK with the hosted callback service and `proper-lockfile@4.1.2` for shared cache coordination. npm downloads the packages on first use with installation scripts disabled. The top-level versions are pinned; their dependency ranges are resolved by npm. The local helper stores authorization under `${CLAUDE_PLUGIN_DATA}/auth`, with owner-only credential-file permissions on Unix. Its callback page has no external resources and clears authorization parameters from the address bar.
+The local helper uses `@modelcontextprotocol/sdk@1.30.0` to initialize immediately and expose `adzviser_connection_status`, `adzviser_connect`, and `adzviser_sign_in`. Startup and tool discovery remain idle. Status reads can resume a previously started conversation sign-in or saved authorization, but never start new browser consent. Calling `adzviser_connect` starts `mcp-remote@0.14.2` for the existing local OAuth flow. Calling `adzviser_sign_in` uses the SDK with the hosted callback service and `proper-lockfile@4.1.2` for shared cache coordination. npm downloads the packages on first use with installation scripts disabled. The top-level versions are pinned; their dependency ranges are resolved by npm. The local helper stores authorization under `${CLAUDE_PLUGIN_DATA}/auth`, with owner-only credential-file permissions on Unix. Its callback page has no external resources and clears authorization parameters from the address bar.
 
 Claude may show a local-server permission prompt because the package still includes that helper. The helper runs with the user's OS permissions; the plugin adds no filesystem-browsing MCP tool or installation hook. Skills may use Claude's file and calculation tools for requested analysis and exports. Organization restrictions apply to both connection routes.
 
