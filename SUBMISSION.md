@@ -2,7 +2,7 @@
 
 This document contains listing copy and the remaining publication steps. A GitHub repository and its own marketplace do not by themselves constitute an Anthropic directory listing.
 
-The repository contains **Adzviser 1.1.1**, which keeps the tested connection logic and skills from 1.1.0 and uses app-neutral sign-in confirmation messages. Linux Desktop Code testing confirmed plugin workspace access, Google Ads reporting, and access in a new conversation. Automated tests cover a 40-second first sign-in in the same session. A manual delayed first sign-in and comparison against source-platform reports remain outstanding; see the [release checks](docs/testing.md) before submission.
+The repository contains **Adzviser 1.1.2**, with its data connection named **analytics** and app-neutral sign-in confirmation messages. Linux Desktop Code testing confirmed plugin workspace access, Google Ads reporting, and access in a new conversation. Automated tests cover a 40-second first sign-in in the same session. A manual delayed first sign-in and comparison against source-platform reports remain outstanding; see the [release checks](docs/testing.md) before submission.
 
 ## Submission values
 
@@ -13,7 +13,7 @@ The repository contains **Adzviser 1.1.1**, which keeps the tested connection lo
 | Plugin ID | `adzviser` |
 | Suggested display name | Adzviser |
 | Publisher | Adzviser |
-| Version | `1.1.1` |
+| Version | `1.1.2` |
 | Categories, if requested | Marketing; Data & Analytics |
 | Website | `https://adzviser.com` |
 | Documentation | `https://github.com/adzviserllc/claude-plugin#readme` |
@@ -47,7 +47,7 @@ The plugin supplies its own connection and browser sign-in; the separate Adzvise
 ## Reviewer setup and sample prompts
 
 1. Install from this public repository or the release ZIP.
-2. Use a local Code session with Node.js 22.12+ and npm available. Keep the Adzviser directory connector disabled, approve the plugin's local server, and complete its browser sign-in. Ask for actual workspaces and verify the tool originates from `plugin:adzviser:adzviser`. Repeat in a new conversation to check saved-login reuse.
+2. Use a local Code session with Node.js 22.12+ and npm available. Keep the Adzviser directory connector disabled, approve the plugin's local server, and complete its browser sign-in. Ask for actual workspaces and verify the tool originates from `plugin:adzviser:analytics`. Repeat in a new conversation to check saved-login reuse.
 3. Use a designated Adzviser review account with a reporting workspace connected to the sources being tested. Account setup starts at `https://adzviser.com/set-up`. If Anthropic requests provisioned access, supply it through their private reviewer-access mechanism, never in this public repository.
 4. Select the Adzviser setup skill, verify real workspaces, then test representative prompts:
    - “How much did Google Ads spend last month?”

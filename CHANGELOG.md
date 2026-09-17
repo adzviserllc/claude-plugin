@@ -1,5 +1,13 @@
 # Release notes
 
+## 1.1.2 — 2026-09-16
+
+The Adzviser plugin's data connection is now named **analytics**, so Claude identifies it as **plugin:adzviser:analytics**. The plugin remains **Adzviser**, and its skill commands stay the same.
+
+The connection guide now recognizes the new name and the earlier name during upgrades. The plugin identity, OAuth client, service endpoint, and saved-login location are unchanged. Any custom tool permission rules targeting the old connection name need the new name; Claude may ask for tool approval again.
+
+Refresh the marketplace, update Adzviser, and restart Claude Code or fully quit and reopen Claude Desktop to load the new connection name. No backend deployment is needed. Supported environments are unchanged.
+
 ## 1.1.1 — 2026-09-16
 
 The browser sign-in confirmation now says **Return to your conversation** and directs you back to where you started sign-in. Both success and error messages use the same wording across apps and terminal sessions instead of naming Claude Desktop.

@@ -2,13 +2,13 @@
 
 Turn connected marketing data into performance reviews, pacing checks, SEO insights, and ecommerce reports. The plugin includes eight skills, a marketing analyst agent, and its own Adzviser sign-in. You do not need to install or enable the Adzviser directory connector.
 
-**Version 1.1.1.** The GitHub marketplace offers one plugin: **Adzviser**. It stays connected while you sign in and makes your data tools available in the same conversation. Workspace discovery, Google Ads reporting, and access in a new conversation were confirmed in Linux Desktop Code. See the [release notes](https://github.com/adzviserllc/claude-plugin/releases/tag/v1.1.1) and [test evidence](https://github.com/adzviserllc/claude-plugin/blob/main/docs/independent-connection-testing.md) for verification and remaining checks.
+**Version 1.1.2.** The GitHub marketplace offers one plugin: **Adzviser**. It stays connected while you sign in and makes your data tools available in the same conversation. Workspace discovery, Google Ads reporting, and access in a new conversation were confirmed in Linux Desktop Code. See the [release notes](https://github.com/adzviserllc/claude-plugin/releases/tag/v1.1.2) and [test evidence](https://github.com/adzviserllc/claude-plugin/blob/main/docs/independent-connection-testing.md) for verification and remaining checks.
 
 ## Get started in Claude Desktop Code
 
 You need an [Adzviser account](https://adzviser.com/set-up), a local Code session, and Node.js **22.12+** with npm available to Claude Desktop. Your organization must permit local MCP servers. Cowork, Chat, remote Code sessions, macOS, and Windows have not been verified for this release.
 
-1. In **Customize → Plugins**, add the marketplace repository `https://github.com/adzviserllc/claude-plugin`. Install **Adzviser**, version **1.1.1**. If the marketplace is already added, refresh it and update Adzviser.
+1. In **Customize → Plugins**, add the marketplace repository `https://github.com/adzviserllc/claude-plugin`. Install **Adzviser**, version **1.1.2**. If the marketplace is already added, refresh it and update Adzviser.
 2. Start a new **local Code** conversation in an ordinary working folder, not `.claude`. Claude may ask you to approve the plugin's local connection. Complete the Adzviser browser sign-in when it opens.
 3. Close the confirmation tab using your browser and return to the same Claude conversation. The plugin stays available while you sign in. If you already asked for a report, tell Claude you have finished signing in; otherwise, ask:
 
@@ -20,9 +20,9 @@ You can keep the directory connector disabled. The plugin uses your existing Adz
 
 ### Updating an existing Adzviser installation
 
-Refresh the Adzviser marketplace, then update the installed plugin. Fully quit Claude Desktop using its Quit command before reopening it; closing the window can leave the old application running in the system tray. On the tested Linux installation, **Ctrl+Q** quits the application. Confirm the plugin details show **1.1.1**.
+Refresh the Adzviser marketplace, then update the installed plugin. Fully quit Claude Desktop using its Quit command before reopening it; closing the window can leave the old application running in the system tray. On the tested Linux installation, **Ctrl+Q** quits the application. Confirm the plugin details show **1.1.2**.
 
-Version 1.1.1 keeps the tested connection logic and skills, with app-neutral sign-in confirmation messages. Your saved Adzviser sign-in stays in the same location; this update does not require signing out or deploying a backend.
+Version 1.1.2 names the plugin’s data connection **analytics**, shown as `plugin:adzviser:analytics` in Claude. Skill commands stay the same. Your saved Adzviser sign-in stays in the same location; this update does not require signing out or deploying a backend. Claude may ask for tool approval again under the new name. If you configured custom permission rules for the old server name, update those rules to target `plugin:adzviser:analytics` (tool prefix `mcp__plugin_adzviser_analytics__`).
 
 ### Upgrading from the Desktop test plugin
 
@@ -75,7 +75,7 @@ The **marketing-analyst** agent supports more involved multi-source analyses in 
 
 ## Connection and permissions
 
-The plugin declares one local MCP server named **adzviser**. Its Node.js launcher uses `@modelcontextprotocol/sdk@1.30.0` to answer local initialization immediately and expose a connection-status tool. It runs the pinned `mcp-remote@0.14.2` helper in a child process for browser OAuth with PKCE and the connection to `https://mcp.adzviser.com/http`. Once authorization completes, MCP tool-list notifications make the reporting tools available without a new conversation. The packages are downloaded from npm on first use with installation scripts disabled. Their top-level versions are pinned; npm resolves their dependency ranges. The initial npm download still requires network access.
+The plugin declares one local MCP server named **analytics**, shown as `plugin:adzviser:analytics`. Its Node.js launcher uses `@modelcontextprotocol/sdk@1.30.0` to answer local initialization immediately and expose a connection-status tool. It runs the pinned `mcp-remote@0.14.2` helper in a child process for browser OAuth with PKCE and the connection to `https://mcp.adzviser.com/http`. Once authorization completes, MCP tool-list notifications make the reporting tools available without a new conversation. The packages are downloaded from npm on first use with installation scripts disabled. Their top-level versions are pinned; npm resolves their dependency ranges. The initial npm download still requires network access.
 
 Claude shows a permission prompt because this helper runs locally with your user account's OS permissions. Renaming the server does not narrow those permissions. The helper handles MCP messages, reporting results, and its own OAuth files. The plugin does not add a filesystem-browsing MCP tool or installation hook. The skills may use Claude's file and calculation tools for requested analysis and exports.
 

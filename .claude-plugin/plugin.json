@@ -1,6 +1,6 @@
 {
   "name": "adzviser",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Analyze marketing, analytics, ecommerce, and CRM data with Adzviser. Includes eight workflows and its own browser sign-in. For local Claude Code; requires Node.js 22.12+ and npm.",
   "author": {
     "name": "Adzviser",

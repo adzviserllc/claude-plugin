@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "adzviser": {
+    "analytics": {
       "type": "stdio",
       "command": "npx",
       "args": [

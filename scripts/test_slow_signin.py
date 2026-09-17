@@ -33,7 +33,7 @@ def main():
         fixture = ThreadingHTTPServer(('127.0.0.1', 0), Fixture)
         threading.Thread(target=fixture.serve_forever, daemon=True).start()
         config = json.loads((ROOT / '.mcp.json').read_text())
-        server = config['mcpServers']['adzviser']
+        server = config['mcpServers']['analytics']
         server['args'] = [a.replace('https://mcp.adzviser.com/http', f'http://127.0.0.1:{fixture.server_port}/mcp') for a in server['args']]
         (plugin / '.mcp.json').write_text(json.dumps(config))
         config_dir = root / 'config'
@@ -60,7 +60,7 @@ with urlopen(url,timeout=10) as response:
         env.update(CLAUDE_CONFIG_DIR=str(config_dir), BROWSER=str(browser))
         processes = []
 
-        def session(label, limit):
+        def session(label, limit, server_name='analytics'):
             process = subprocess.Popen([
                 options.claude, '--print', '--input-format', 'stream-json', '--output-format', 'stream-json',
                 '--verbose', '--setting-sources', 'user', '--no-session-persistence', '--plugin-dir', str(plugin),
@@ -104,7 +104,7 @@ with urlopen(url,timeout=10) as response:
                 if response.get('request_id') != 'status':
                     continue
                 for item in response.get('response', {}).get('mcpServers', []):
-                    if item.get('name') != 'plugin:adzviser:adzviser':
+                    if item.get('name') != f'plugin:adzviser:{server_name}':
                         continue
                     elapsed = time.monotonic() - start
                     assert item.get('status') != 'failed', 'Host cached a failed connection during browser sign-in'
@@ -117,7 +117,7 @@ with urlopen(url,timeout=10) as response:
                         assert any('adzviser_connection_status' in name for name in names), names
                         if label == 'first':
                             assert Fixture.authorizations == 0, 'The slow login should still be pending'
-                        print(f'{label}: local connection ready at {connected_at:.1f}s', flush=True)
+                        print(f'{label}: {item["name"]} ready at {connected_at:.1f}s', flush=True)
                     if any('list_workspace' in name for name in names):
                         if label == 'first':
                             assert elapsed > 40, 'Login did not exceed the host startup timeout'
@@ -137,13 +137,21 @@ with urlopen(url,timeout=10) as response:
         try:
             first = session('first', 70)
             stop(first)
+            # Keep the plugin identity and data directory while switching the
+            # connection key. Both names must reuse the same authorization.
+            (plugin / '.mcp.json').write_text(json.dumps({'mcpServers': {'adzviser': server}}))
+            legacy = session('legacy-name', 20, server_name='adzviser')
+            stop(legacy)
+            (plugin / '.mcp.json').write_text(json.dumps(config))
             session('restart', 20)
             assert Fixture.authorizations == 1, 'Restart should reuse the saved login'
             assert Fixture.registrations == 1, 'Restart should reuse its OAuth client'
             cache = config_dir / 'mcp-needs-auth-cache.json'
             if cache.exists():
-                assert 'plugin:adzviser:adzviser' not in json.loads(cache.read_text())
-            print('PASS: 40-second sign-in does not time out startup; tools appear without restarting; saved login survives the next session.', flush=True)
+                failures = json.loads(cache.read_text())
+                assert 'plugin:adzviser:analytics' not in failures
+                assert 'plugin:adzviser:adzviser' not in failures
+            print('PASS: 40-second sign-in does not time out startup; tools appear without restarting; saved login survives connection renaming and the next session.', flush=True)
         finally:
             for process in processes:
                 stop(process)

@@ -1,19 +1,19 @@
-# Release checks — Adzviser 1.1.1
+# Release checks — Adzviser 1.1.2
 
-Version 1.1.1 keeps the tested connection logic and skills from 1.1.0; only callback copy changes. The checks below describe the full acceptance process; the evidence paragraph records which interactive checks have actually been completed.
+Version 1.1.2 renames the data connection to `analytics` and updates discovery guidance. The connection runtime and saved-login location are unchanged. The checks below describe the full acceptance process; the evidence paragraph records which interactive checks have actually been completed.
 
 ## Structure and installation
 
 Run the validation, callback tests, integration tests, and packaging commands in [README](../README.md#development-and-publishing). Extract the ZIP to a temporary folder and validate its plugin manifest, skills, and agent. Check that relative links between packaged workflows resolve. The ZIP must include `.mcp.json`, eight skills, and all five runtime files.
 
-Add the marketplace in an isolated Claude configuration. Verify that it offers exactly one **Adzviser** plugin, and that its MCP permission prompt names **adzviser**. Install the package at user scope and check discovery from two ordinary project folders.
+Add the marketplace in an isolated Claude configuration. Verify that it offers exactly one **Adzviser** plugin, and that its MCP permission prompt names **analytics**. Install the package at user scope and check discovery from two ordinary project folders.
 
 ## Interactive acceptance
 
 Use a designated test account. Keep the directory connector disabled, remove the old `adzviser-desktop` test plugin, and use a new local Code conversation.
 
 1. Install Adzviser and complete its own browser sign-in, deliberately taking over 30 seconds. The connection-status tool should be available while waiting, and data tools should appear in the same conversation after sign-in. Record the number of approval and sign-in steps.
-2. Ask for workspaces and connected sources. Verify an actual tool call from `plugin:adzviser:adzviser` and compare the result to the account.
+2. Ask for workspaces and connected sources. Verify an actual tool call from `plugin:adzviser:analytics` and compare the result to the account.
 3. Start another conversation in the same project and repeat without a new sign-in. Restart Desktop and repeat once more.
 4. Ask for a small report and compare dates, metric definitions, and totals to the source platform.
 5. Confirm the branded callback clears OAuth parameters and gives manual browser-tab closing instructions.
