@@ -6,7 +6,7 @@ Follow the [connection guidance](../../setup/references/connection.md) before re
 
 ## Select the data path
 
-Use the tools supplied by the plugin's Adzviser connection, following the connection guidance above. Do not use a guessed HTTP API or silently substitute the directory connector. Tool name punctuation varies by host; check the tool's origin. The names below are the unprefixed tool names.
+Use the Adzviser connection selected through the connection guidance above. Claude may present the bundled remote route under its matched Adzviser directory entry. Keep the selected account and route consistent; do not silently switch to another connection or use a guessed HTTP API. Tool name punctuation varies by host; check the tool's origin. The names below are the unprefixed tool names.
 
 - Connected-account performance uses that source's account request, such as `google_ads_request` or `fb_ads_request`.
 - Public competitor research uses `google_ads_transparency_request` or `meta_ad_library_request`. Those searches do not supply competitors' private performance metrics. A brand name alone is not evidence that the user wants a public search.
